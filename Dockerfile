@@ -21,15 +21,14 @@ RUN useradd -m -s /bin/bash builder && \
 USER builder
 WORKDIR /home/builder/app
 
-# Combine Roswell installation and setup into a single RUN layer to ensure
-# the 'ros' command is available in the PATH for subsequent commands.
+# Combine Roswell installation and setup into a single RUN layer.
+# Use full paths to ros binary to avoid PATH issues within this layer.
 RUN curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh && \
-    export PATH="/home/builder/.roswell/bin:${PATH}" && \
-    ros setup && \
-    ros install sbcl-bin && \
-    ros install qlot
+    /home/builder/.roswell/bin/ros setup && \
+    /home/builder/.roswell/bin/ros install sbcl-bin && \
+    /home/builder/.roswell/bin/ros install qlot
 
-# Set the PATH for subsequent layers and the final container.
+# Set the PATH for all subsequent layers and the final container environment.
 ENV PATH="/home/builder/.roswell/bin:${PATH}"
 
 # Copy the project files into the image.
