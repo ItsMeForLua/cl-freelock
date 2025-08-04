@@ -1,3 +1,4 @@
 ql cffi 
 ql fiveam 
 ql trivial-benchmark
+ql queues

@@ -3,7 +3,8 @@
   (:nicknames #:fl-bench)
   (:export #:run-all-benchmarks
            #:run-all-bounded-benchmarks
-           #:run-all-spsc-benchmarks))
+           #:run-all-spsc-benchmarks
+           #:run-all-competitor-benchmarks))
 
 (in-package #:cl-freelock-benchmarks)
 
@@ -75,4 +76,5 @@
   (run-all-unbounded-benchmarks)
   (run-all-bounded-benchmarks)
   (run-all-spsc-benchmarks)
+  (run-all-competitor-benchmarks)
   (format t "~&~%--- Full Benchmark Suite Complete ---~%"))
