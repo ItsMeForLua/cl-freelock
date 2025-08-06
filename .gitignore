@@ -25,3 +25,8 @@ profile.txt
 *.fasl
 *.asd-fasl
 jenkins_home/
+
+.RData
+.Rhistory
+*.csv
+graphs/

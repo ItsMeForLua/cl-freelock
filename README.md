@@ -20,25 +20,32 @@ Lock-free algorithms excel on multi-core systems, providing superior scalability
 - **Cross-Platform:** Works on Linux, macOS, and Windows
 - **Full CI/CD Setup:** Includes a complete testing and benchmarking pipeline using Docker and Jenkins
 
+---
+
+![bounded_queue_comparison](https://i.imgur.com/00fBZeA.png)
+*Figure 1. A visual comparison of bounded queue Intel(R) Core(TM) Ultra 7 155H (16 Cores, 22 Logical Processors)*
+
+
 ## Performance
 
-| Library | Scenario | Throughput (ops/sec) | Performance Gain |
+| **Benchmark (Multi-Threaded)** | **Throughput (ops/sec)** | **GC Pressure (1M items)** | **Key Advantage** |
 | --- | --- | --- | --- |
-| **cl-freelock** | **1P/1C** | **~3.1M** | **1.9x faster** |
-| Lock-based list | 1P/1C | ~1.6M | -   |
-| oconnore/queues | 1P/1C | ~1.5M | -   |
-| **cl-freelock** | **4P/4C** | **~2.5M** | **3.2x faster** |
-| oconnore/queues | 4P/4C | ~0.78M | -   |
+| **Bounded Queue (1P/1C)** | **~3.8M** | **~131 KB** | High throughput with virtually no memory allocation. |
+| **Bounded Queue (4P/4C)** | **~2.9M** | **~262 KB** | **2.9x faster** than `oconnore/queues` under contention. |
+| **SPSC Queue** | **~7.2M** | **~131 KB** | The fastest and most memory-efficient option for 2-thread pipelines. |
+| **Batch API (8P/8C)** | **~34.1M** | ~52 MB | Extreme throughput for bulk processing. |
 
 **Specialized APIs:**
 
-- **SPSC Queue (1P/1C):** ~5.7M ops/sec (1.8x faster than MPMC)
-- **Bounded Queue (Batch of 64, 2P/2C):** ~34.1M ops/sec (order-of-magnitude speedup)
+- **SPSC Queue (1P/1C):** ~7.9M ops/sec
+  
+- **Bounded Queue (Batch of 64, 8P/8C):** ~34.1M ops/sec (An incredible order-of-magnitude speedup)
 
 **Single-Threaded Optimization Mode:**
 
-- **Unbounded (1P/1C):** ~6.6M ops/sec (~32% faster)
-- **Bounded (1P/1C, Batch of 64):** ~20.4M ops/sec (~40% faster)
+- **SPSC Queue (1P/1C):** ~7.2M ops/sec
+  
+- **Bounded Queue (1P/1C, Batch of 64):** ~14.6M ops/sec
 
 *Your results may vary based on hardware*
 
@@ -198,19 +205,38 @@ make benchmark
 make benchmark-st
 ```
 
+- **To Generate Graphs**
+
+``` bash
+# Make sure you have R installed, and ran benchmarks with CSV_LOG=filename.csv set
+make graphs # or: make graphs CSV_FILE=Custom.csv
+```
+> ***NOTE:** the initial auto-deps will be a few minutes.*
+
 ### Available Make Targets
 
-- `make deps` - Install dependencies using qlot
-- `make test` - Run tests in reproducible qlot environment
-- `make test-local` - Run tests with system Lisp (no qlot)
-- `make benchmark` - Run performance benchmarks (multi-threaded)
-- `make benchmark-st` - Run benchmarks (single-threaded optimized)
-- `make install-dev` - Symlink project to local-projects directory
-- `make clean` - Clean build artifacts
-- `make help` - Show all available commands
+- `make deps` - Install dependencies using qlot.
+  
+- `make test` - Run tests in a reproducible qlot environment.
+  
+- `make test-local` - Run tests with system Lisp (no qlot).
+
+- `make benchmark` - Run default benchmarks. Add `CSV_LOG=file.csv` to save results to a file.
+  
+- `make benchmark-st` - Run single-threaded benchmarks. Add `CSV_LOG=file.csv` to save results.
+  
+- `make benchmark-all` - Run all benchmarks and save to a file (`CSV_LOG` is required).
+  
+- `make graphs` - Generate plots from a CSV file (e.g., `make graphs CSV_FILE=results.csv`).
+  
+- `make install-dev` - Symlink the project to your local-projects directory for development.
+  
+- `make clean` - Clean all build artifacts.
+  
+- `make help` - Show a list of all available commands and their descriptions.
 
 ## Wiki
-If you're interesting in a more thorough deep-dive regarding this project, please refer to the Wiki.
+If you're interested in a more thorough deep-dive regarding this project, please refer to the [Wiki](https://github.com/ItsMeForLua/cl-freelock/wiki).
 
 ## Contributing
 
@@ -218,4 +244,4 @@ Bug reports and pull requests are welcome on GitHub. Please ensure the test suit
 
 ## License
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+This project is licensed under the **MIT License**.
