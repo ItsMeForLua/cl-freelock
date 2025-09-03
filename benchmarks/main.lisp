@@ -1,4 +1,4 @@
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 (defun run-all-benchmarks (&key (log-file nil) (append nil))
   "Run and report on all defined benchmarks.

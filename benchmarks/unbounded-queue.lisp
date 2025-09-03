@@ -1,7 +1,7 @@
 ;;;; benchmarks/unbounded-queue.lisp
 ;;;; Unbounded queue benchmark tests.
 
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 (defun run-contention-benchmark (num-producers num-consumers items-per-producer)
   "Runs a benchmark for the unbounded queue."

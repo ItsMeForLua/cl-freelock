@@ -1,9 +1,9 @@
-(defpackage #:cl-freelock-benchmarks
+(defpackage :cl-freelock-benchmarks
   (:use #:cl #:fl #:bordeaux-threads)
   (:nicknames #:fl-bench)
   (:export #:run-all-benchmarks))
 
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 ;; A helper macro to measure memory allocation
 #+sbcl

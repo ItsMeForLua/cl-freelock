@@ -1,7 +1,9 @@
-(in-package #:cl-freelock)
+(in-package :cl-freelock)
 
 ;; Wrapper around the atomic operations, primarily Compare-and-Swap (CAS).
 
+;; There are some underlying assumptions here that need to be tested against.
+;; We need to do some more thorough testing against other implementations.
 #-(or sbcl ccl ecl)
 (error "cl-freelock requires atomic operations support from the Lisp implementation. Supported: SBCL, CCL, ECL.")
 

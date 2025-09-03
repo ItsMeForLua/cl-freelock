@@ -70,38 +70,36 @@ Then, load the system in your REPL:
 (ql:quickload :cl-freelock)
 ```
 
-## Usage Example
-
-Reference the functions in your own code. All symbols are exported from the `cl-freelock` package.
+## Usage Examples
 
 ```lisp
 (use-package :cl-freelock)
 
 ;; Unbounded MPMC Queue - General purpose
-(defvar *q* (make-queue))
-(queue-push *q* 100)
-(multiple-value-bind (obj success) (queue-pop *q*)
+(defvar *q* (cl-freelock:make-queue))
+(cl-freelock:queue-push *q* 100)
+(multiple-value-bind (obj success) (cl-freelock:queue-pop *q*)
   (when success
     (print obj)))
 ;; => 100
 
 ;; Bounded MPMC Queue - With backpressure control
-(defvar *bq* (make-bounded-queue 1024))
-(bounded-queue-push *bq* :hello)
-(bounded-queue-pop *bq*)
+(defvar *bq* (cl-freelock:make-bounded-queue 1024))
+(cl-freelock:bounded-queue-push *bq* :hello)
+(cl-freelock:bounded-queue-pop *bq*)
 ;; => :HELLO, T
 
 ;; Batch operations for maximum throughput
-(bounded-queue-push-batch *bq* '(1 2 3))
-(bounded-queue-pop-batch *bq* 3)
+(cl-freelock:bounded-queue-push-batch *bq* '(1 2 3))
+(cl-freelock:bounded-queue-pop-batch *bq* 3)
 ;; => (1 2 3), T
 
 ;; SPSC Queue - Maximum performance for two-thread pipelines
-(defvar *spsc-q* (make-spsc-queue 2048))
+(defvar *spsc-q* (cl-freelock:make-spsc-queue 2048))
 ;; Must only be called from designated producer thread
-(spsc-push *spsc-q* "world")
+(cl-freelock:spsc-push *spsc-q* "world")
 ;; Must only be called from designated consumer thread
-(spsc-pop *spsc-q*)
+(cl-freelock:spsc-pop *spsc-q*)
 ;; => "world", T
 ```
 

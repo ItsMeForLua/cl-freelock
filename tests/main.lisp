@@ -2,7 +2,7 @@
   (:use #:cl #:fl #:fiveam #:bordeaux-threads)
   (:export #:run-tests))
 
-(in-package #:cl-freelock-tests)
+(in-package :cl-freelock-tests)
 
 (def-suite cl-freelock-suite
   :description "Test suite for the cl-freelock library.")

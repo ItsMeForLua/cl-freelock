@@ -1,4 +1,4 @@
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 (defun run-spsc-benchmark (items)
   "Runs a benchmark for the SPSC queue."

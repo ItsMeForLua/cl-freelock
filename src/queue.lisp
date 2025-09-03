@@ -1,4 +1,4 @@
-(in-package #:cl-freelock)
+(in-package :cl-freelock)
 
 ;; I'm keeping this comment here just because I cant decide on keeping it or not(so Ill fallback to keeping it):
 ;; We now provide two compile-time optimization profiles.

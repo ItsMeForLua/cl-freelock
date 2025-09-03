@@ -1,4 +1,4 @@
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 ;; Lock-based queue implementation for comparison
 (defclass lock-based-queue ()

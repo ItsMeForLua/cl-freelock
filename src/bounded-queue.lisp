@@ -1,6 +1,6 @@
 ;;;; bounded-queue.lisp Vyukov MPMC Bounded Queue
 
-(in-package #:cl-freelock)
+(in-package :cl-freelock)
 
 (declaim (optimize (speed 3) (safety 1) (debug 1)))
 
