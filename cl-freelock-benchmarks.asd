@@ -12,4 +12,5 @@
                   (:file "bounded-queue")
                   (:file "spsc-queue")
                   (:file "competitors")
+                  (:file "latency")
                   (:file "main")))))

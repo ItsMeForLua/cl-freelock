@@ -108,7 +108,8 @@
 ;;;
 ;;; Batch Operations
 ;;;
-
+;;; for "queue sequence", this might be a naming collision with a global function, but I could be wrong...
+;;; for now, no issues have risen, but this will need to be checked eventually.
 (defun bounded-queue-push-batch (queue sequence)
   "Pushes a sequence of objects onto the queue. Returns T on success, NIL if
    there is not enough space for the entire sequence."
