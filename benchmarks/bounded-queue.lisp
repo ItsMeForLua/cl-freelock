@@ -1,4 +1,4 @@
-(in-package #:cl-freelock-benchmarks)
+(in-package :cl-freelock-benchmarks)
 
 (defun run-bounded-contention-benchmark (num-producers num-consumers items-per-producer)
   "Runs a benchmark for the bounded queue."
