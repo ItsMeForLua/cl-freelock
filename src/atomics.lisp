@@ -4,8 +4,8 @@
 
 ;; There are some underlying assumptions here that need to be tested against.
 ;; We need to do some more thorough testing against other implementations.
-#-(or sbcl ccl ecl)
-(error "cl-freelock requires atomic operations support from the Lisp implementation. Supported: SBCL, CCL, ECL.")
+#-(or sbcl ccl ecl clasp)
+(error "cl-freelock requires atomic operations support from the Lisp implementation. Supported: SBCL, CCL, ECL, Clasp")
 
 ;; We define a simple structure to hold a value that can be atomically updated.
 ;; This acts as our atomic pointer/reference.
@@ -22,7 +22,9 @@
   `(ccl::conditional-store (atomic-ref-value ,place) ,old ,new)
   #+ecl
   `(mp:compare-and-swap (atomic-ref-value ,place) ,old ,new)
-  #-(or sbcl ccl ecl)
+  #+clasp
+  `(mp:cas (atomic-ref-value ,place) ,old ,new)
+  #-(or sbcl ccl ecl clasp)
   `(error "CAS not implemented for this Lisp."))
 
 (defmacro atomic-incf (atomic-ref &optional (delta 1))
@@ -63,7 +65,9 @@
   (cas *sbcl-barrier-dummy* nil nil)
   #+ccl
   (ccl:hard-memory-barrier)
+  #+clasp
+  (mp:fence :sequentially-consistent)
   #+ecl
   (progn)
-  #-(or sbcl ccl ecl)
+  #-(or sbcl ccl ecl clasp)
   (error "Memory barrier not implemented for this Lisp."))
