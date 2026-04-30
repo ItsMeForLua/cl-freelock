@@ -1,8 +1,8 @@
 **To Implement:**
-**SOON** Staging branch needs to be updated with the updates that are currently present in main, while retaining the updates made to benchmarks in staging (latency stats).
 
-- **THIRD** Expand the docker-jenkins CI to test against other lisp implementations.
 
+- **SOON** Expand the docker-jenkins CI to test against other lisp implementations.
+- **SOON** Finally update the wiki to include a full reference manual of the 20+ userfacing functions in cl-freelock.
 ---
 
 - MPSC (not to be confused with MPMC).
@@ -13,6 +13,7 @@
 ---
 
 #### DONE
+~**SOON** Staging branch needs to be updated with the updates that are currently present in main, while retaining the updates made to benchmarks in staging (latency stats).~
 ~~**FIRST** Update package declarations from #: to :
 In ASDF system definition files, symbols like :name, :depends-on, and other system attributes are conventionally keyword symbols (using :). These keywords
 are interned and recognized globally, making the system definition clear, standard, and compatible with tooling around ASDF. Using uninterned symbols (#:) can cause issues with symbol recognition in ASDF, as ASDF expects keywords for system properties.~~
