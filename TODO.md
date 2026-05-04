@@ -3,8 +3,22 @@
 
 - **SOON** Expand the docker-jenkins CI to test against other lisp implementations.
 - **SOON** Finally update the wiki to include a full reference manual of the 20+ userfacing functions in cl-freelock.
----
+- I'm probably going to change the github wiki and its reference guide to LaTeX/Tex, and use lwarp to automate converting it to HTML.
+Document class in this case will be article 12pt, chicago style. The index will be top level, and there will be included footnotes.
+The reference guide and the other portions currently in the wiki will be seperated into different web pages.
+A good reference for this proposed change is [here](https://itsmeforlua.github.io/Directed-Dimensions-Basic-and-Fundamental-Transformations-in-n-dimensional-Space/). I can just copy the Makefile targets and such. Though that leads me to wonder if I should actually seperate the latex to html stuff (including the Makefile targets) into a seperate web branch.
+- I'm going to remove the staging branch, as it's been quite useless for me thus far. If I decide I need it in the future, I can just remake it.
+- I'm going to include more math and CS reflections for this library in the html web page(s). As currently the reflection writing in the wiki is very ugly.
+- I need to update the README, because right now I do not like the prose, and parts of it is a bit too salesman-like. Presumably due to excitement of release.
+- I need to revisit the r code that makes the graphs just to see if there's anything I want to change, remove, etc.
+Along with that, I also need to update the way the latency benchmarks are added to the csv file. I might actually have it be saved as a seperate CSV...now that I think about it, it's probably more reliable to just have each particular type of benchmark be in its own csv, as I remember running into issues with appending and whitespace when I made the logging code. Additionally, extracting particular data for graphing or other analysis will be as simple as just pointing to its file; ergo, any needed parsing code can be much simpler.
 
+- I really want to start finally using google cloud with jenkins. Not just for this repo, but for my whole github. So, I think this is something worth visiting in regards to this repo in particular, as I still need to add targets in the test suite to check compatability across other dialects. Plus, jenkins uses groovy, and groovy in my opinion atleast, is really fun to write.
+
+This all will be done in the summer; so, after 5/13. 
+
+---
+- When vale linter finally supports common lisp, I'll add it in the dev branch as a CI/CD target.
 - MPSC (not to be confused with MPMC).
 - Implement SPMC (not to be confused with SPSC).
 - add verbose debug logging for docker-jenkins CI errors.
