@@ -1,4 +1,4 @@
-(asdf:defsystem #:cl-freelock-benchmarks
+(asdf:defsystem :cl-freelock-benchmarks
   :description "Benchmark suite for cl-freelock."
   :author "Andrew D. France andrewforlua@gmail.com"
   :license "MIT"

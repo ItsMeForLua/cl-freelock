@@ -1,0 +1,67 @@
+# Here I'm going to just use the same docker setup (minus jenkins) as the SBCL.yml, have it pull the dockerfile supplied by the clasp devs, and then have it run the test suite via clasp.
+# I did think about adding it into the original yml, however, that would take up more time, and would be an issue regarding seperation of concerns. We will instead rely on github matrix.
+
+# docker pull ghcr.io/clasp-developers/clasp:latest
+
+#I could also have clasp be pulled as a base image, which I haven't decided on yet, but I'll start with the git pull first.
+
+# I would like to use roswell to install clasp, but currently the support for clasp is a little bit lackluster.
+
+
+# REMINDER: I need to add a status badge for SBCL and CLASP to the Readme.md file.
+
+# If needed for keyring issues:
+# rm -rf /etc/pacman.d/gnupg ...then... pacman -S archlinux-keyring --noconfirm ...then... pacman-key --populate archlinux
+# The current image from clasp has old keyrings, so patches like this might be...
+# needed. Right now we're fine, but it's written here just for reference.
+name: CLASP CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  setup-and-test-CLASP:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/clasp-developers/clasp:latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        # Note that the clasp docker image uses arch linux.
+        # Currently, clasp's docker image doesn't fully support pacman 7's sandbox...
+        # so we'll patch for now with sed -i 's/^#DisableSandbox/DisableSandbox/' /etc/pacman.conf
+        # This will let us use pacman without running into any landlock issues.
+        # The keyrefresh kind of takes a while, so I'm hoping to figure out a better fix.
+      - name: Refresh keys
+        run: pacman-key --refresh-keys
+        # If ever needed, we can also add pacman-key --init and pacman-key --populate archlinux
+      - name: Disable pacman 7 sandbox
+        run: sed -i 's/^#DisableSandbox/DisableSandbox/' /etc/pacman.conf
+# I tried having it run pacman -Syu --noconfirm, but clasp needs particular versions of things like clang and llvm, so it's best not to use Syu in this case.
+      - name: Install environment packages
+        run: |
+          echo "Running ldd on clasp for debug logs..."
+          ldd $(which clasp)
+      - name: Install qlot with curl
+        run: curl -L https://qlot.tech/installer | sh
+      
+      - name: qlot init check
+        run: qlot init
+
+      - name: Install dependencies
+        run: make deps
+
+      - name: Run tests
+        run: make test
+      
+      - name: Run benchmarks
+        run: make benchmark
+
+
+# PATHS:
+# qlot via curl will be installed at /usr/local/bin/qlot
