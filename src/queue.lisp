@@ -3,7 +3,7 @@
 ;; I'm keeping this comment here just because I cant decide on keeping it or not(so Ill fallback to keeping it):
 ;; We now provide two compile-time optimization profiles.
 ;; The default is optimized for multi-threaded contention.
-;; If the user adds :cl-freelock-single-threaded to *features* before
+;; If the user adds :cl-freelock-single-threaded to *features* before...
 ;; loading, we use a profile optimized for the 1P/1C case.
 
 #+cl-freelock-single-threaded
@@ -18,11 +18,20 @@
   (declaim (optimize (speed 3) (safety 0) (debug 0))))
 
 
-;; Classic lock-free, multi-producer, multi-consumer
-;; (MPMC) unbounded queue based on the Michael-Scott algorithm.
+;; lock-free, multi-producer, multi-consumer...
+; (MPMC) unbounded queue based on the Michael-Scott algorithm.
 
+;; Note: In python, for example, default arguments are evaluated once at definition time...
+; however, ANSI Common Lisp specification, defstruct slot initforms are evaluated...
+; dynamically every time a structure is instantiated.
+; In other words: Every node gets a fresh (and isolated) atomic reference.
+; The original defstruct used (value value...), which under SBCL's compiler, is fine, however...
+; Clasp's compiler is more strict; the actual syntax for a slot is (slot-name initform slot-options)...
+; Therefore, if we want CLASP compatibility, we need to make sure our definition is explicit.
+; To fix this, we just need to give the value slot a valid default initform (like nil)...
+; to satisfy the compiler.
 (defstruct (queue-node (:constructor make-queue-node (value)))
-  (value value :read-only t)
+  (value nil :read-only t)
   (next (make-atomic-ref nil) :read-only t))
 
 (defclass queue ()

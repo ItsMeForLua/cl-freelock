@@ -8,7 +8,6 @@
                  :components
                  ((:file "main")
                   (:file "bounded-queue")
-                  (:file "spsc-queue"))))
-  :in-order-to ((test-op (test-op :cl-freelock-tests))))
+                  (:file "spsc-queue")))))
 
 ;; I haven't decided yet on if I want to use `:module` or `"subdir/file"`in our asd files.

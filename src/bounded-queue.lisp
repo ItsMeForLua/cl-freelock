@@ -17,6 +17,15 @@
   (head (make-atomic-ref 0) :type atomic-ref :read-only t)
   (tail (make-atomic-ref 0) :type atomic-ref :read-only t))
 
+
+;; Note: In many languages (like C or Rust), coercing/casting an integer...
+; to a specific size is completely normal. However, in Common Lisp, coerce is strictly...
+; limited by the language specification. According to the ANSI standard, coerce...
+; is only allowed to convert between a few very specific things: Sequences, Characters to strings..
+; , and complex numbers; NOT integers.
+; We will fix make-bounded-queue by using "the" instead of "coerce".
+; Actually, capacity is already defined as a fixnum because we use unsigned-byte 32...
+; So our original coerce fixnum was redundant, along with being invalid syntax.
 (defun make-bounded-queue (capacity)
   "Creates a new lock-free, bounded queue. Capacity MUST be a power of two."
   (declare (type (unsigned-byte 32) capacity))
@@ -29,7 +38,7 @@
     (dotimes (i capacity)
       (declare (type fixnum i))
       (setf (aref sequences i) (make-atomic-ref i)))
-    (%make-bounded-queue (coerce capacity 'fixnum) buffer sequences mask)))
+    (%make-bounded-queue (the fixnum capacity) buffer sequences mask)))
 
 (declaim (inline bounded-queue-push))
 (defun bounded-queue-push (queue object)
