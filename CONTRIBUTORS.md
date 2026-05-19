@@ -1,4 +1,4 @@
-# $${\color{pink}{\textsf{Contributors \space to \space cl-freelock}}}$$
+# $${\color{pink}{\textsf{Contributors \ to \ cl-freelock}}}$$
 
 Special thanks to everyone who contributes to cl-freelock. \
 Help is always welcome, and always appreciated!
