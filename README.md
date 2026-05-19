@@ -1,6 +1,10 @@
 # cl-freelock
 
-[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Quicklisp](https://img.shields.io/badge/Quicklisp-available-brightgreen.svg)](http://quicklisp.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](/LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/ItsMeForLua/cl-freelock.svg?color=pink)](CONTRIBUTORS.md)   
+![Test Deps](https://img.shields.io/badge/Test_Deps-Stale-yellow.svg)   
+[![Quicklisp](https://img.shields.io/badge/Quicklisp-unavailable-orange.svg)](http://quicklisp.org/)
+![Datasets](https://img.shields.io/badge/Datasets-Not--Up--To--Date-red.svg)   
 
 A lock-free concurrent data structures library for Common Lisp.
 
