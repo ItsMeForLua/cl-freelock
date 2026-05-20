@@ -9,7 +9,7 @@
 ;;
 ;; We use cache-line padding as a way to prevent the head and tail counters from
 ;; sharing a cache line, which would, of course, cause performance degradation due to
-;; "false sharing". NOTE: cache line is typically 64 bytes.
+;; "false sharing".  n.b., cache line is typically 64 bytes.
 
 (defclass spsc-queue ()
   ((buffer :reader spsc-queue-buffer :initarg :buffer

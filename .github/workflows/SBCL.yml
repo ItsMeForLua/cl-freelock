@@ -1,13 +1,13 @@
-name: SBCL CI
+name: SBCL
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
-  build-and-test-SBCL:
+  setup-and-test-SBCL:
     runs-on: ubuntu-latest
 
     steps:

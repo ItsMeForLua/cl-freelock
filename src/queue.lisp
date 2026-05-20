@@ -21,7 +21,7 @@
 ;; lock-free, multi-producer, multi-consumer...
 ; (MPMC) unbounded queue based on the Michael-Scott algorithm.
 
-;; Note: In python, for example, default arguments are evaluated once at definition time...
+;;  n.b., In python, for example, default arguments are evaluated once at definition time...
 ; however, ANSI Common Lisp specification, defstruct slot initforms are evaluated...
 ; dynamically every time a structure is instantiated.
 ; In other words: Every node gets a fresh (and isolated) atomic reference.
@@ -90,7 +90,7 @@ success, or (NIL, NIL) if the queue is empty. This operation is lock-free."
 
 (defun queue-empty-p (queue)
   "Returns T if the queue appears to be empty, NIL otherwise.
-NOTE: In a concurrent environment, the state can change immediately after this call."
+ n.b., In a concurrent environment, the state can change immediately after this call."
   (let ((head (atomic-ref-value (queue-head queue)))
         (tail (atomic-ref-value (queue-tail queue))))
     (and (eq head tail)

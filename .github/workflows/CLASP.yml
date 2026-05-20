@@ -14,7 +14,7 @@
 # rm -rf /etc/pacman.d/gnupg ...then... pacman -S archlinux-keyring --noconfirm ...then... pacman-key --populate archlinux
 # The current image from clasp has old keyrings, so patches like this might be...
 # needed. Right now we're fine, but it's written here just for reference.
-name: CLASP CI
+name: CLASP
 
 on:
   push:
@@ -60,7 +60,7 @@ jobs:
         run: make test
       
       - name: Run benchmarks
-        run: make benchmark
+        run: echo "Benchmarks are not yet compatible with CLASP." #make benchmark
 
 
 # PATHS:

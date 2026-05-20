@@ -4,7 +4,7 @@
 
 ;;; some timing helpers
 ;;; We use microseconds (E-6).
-;;; NOTE: Standard internal-real-time is usually only millisecond precision.
+;;;  n.b., Standard internal-real-time is usually only millisecond precision.
 
 #+sbcl
 (declaim (inline current-time-micros))
