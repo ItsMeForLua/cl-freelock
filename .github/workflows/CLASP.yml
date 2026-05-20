@@ -62,6 +62,5 @@ jobs:
       - name: Run benchmarks
         run: echo "Benchmarks are not yet compatible with CLASP." #make benchmark
 
-
 # PATHS:
 # qlot via curl will be installed at /usr/local/bin/qlot
