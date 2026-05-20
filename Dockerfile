@@ -40,8 +40,7 @@ ENV PATH="/home/builder/.roswell/bin:${PATH}"
 
 RUN ros setup && \
     ros install sbcl-bin && \
-    ros install qlot && \
-    QLOT=$(which qlot)
+    ros install qlot
 
 # Copy the project files into the image.
 COPY --chown=builder:builder . .
