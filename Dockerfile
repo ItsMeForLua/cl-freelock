@@ -36,7 +36,7 @@ WORKDIR /home/builder/app
 
 # With the new makefile logic, if we don't specify where the path is...
 #, docker will not be able to find qlot installed via roswell.
-ENV PATH="/home/builder/.roswell/bin:${PATH}"
+ENV PATH="/home/builder/.local/bin:/home/builder/.roswell/bin:${PATH}"
 
 RUN ros setup && \
     ros install sbcl-bin && \
