@@ -21,7 +21,7 @@ Qlot
 .qlot/
 
 profile.txt
-
+~*
 *.fasl
 *.asd-fasl
 jenkins_home/

@@ -1,13 +1,13 @@
-name: Common Lisp CI
+name: SBCL
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
-  build-and-test:
+  setup-and-test-SBCL:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,3 +23,6 @@ jobs:
       # We override the default command to run the 'benchmark' target.
       - name: Run benchmarks
         run: docker run --rm cl-freelock-app:latest make benchmark
+
+# PATHS:
+# qlot via ros install will be installed at .roswell/bin

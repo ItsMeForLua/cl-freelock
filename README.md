@@ -1,6 +1,12 @@
 # cl-freelock
 
-[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Quicklisp](https://img.shields.io/badge/Quicklisp-available-brightgreen.svg)](http://quicklisp.org/)
+> [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](/LICENSE) [![Version](https://img.shields.io/github/v/tag/ItsMeForLua/cl-freelock?sort=semver&label=version)](https://github.com/ItsMeForLua/cl-freelock/tags) [![Contributors](https://img.shields.io/github/contributors/ItsMeForLua/cl-freelock.svg?color=pink)](CONTRIBUTORS.md) [![Quicklisp](https://img.shields.io/badge/Quicklisp-unavailable-orange.svg)](http://quicklisp.org/)
+---
+  
+> ![Test Deps](https://img.shields.io/badge/Test_Deps-Stale-yellow.svg) ![Datasets](https://img.shields.io/badge/Datasets-Not--Up--To--Date-red.svg)
+---
+
+> [![SBCL](https://github.com/ItsMeForLua/cl-freelock/actions/workflows/SBCL.yml/badge.svg)](https://github.com/ItsMeForLua/cl-freelock/actions/workflows/SBCL.yml) [![CLASP](https://github.com/ItsMeForLua/cl-freelock/actions/workflows/CLASP.yml/badge.svg)](https://github.com/ItsMeForLua/cl-freelock/actions/workflows/CLASP.yml)
 
 A lock-free concurrent data structures library for Common Lisp.
 
@@ -209,7 +215,7 @@ make benchmark-st
 # Make sure you have R installed, and ran benchmarks with CSV_LOG=filename.csv set
 make graphs # or: make graphs CSV_FILE=Custom.csv
 ```
-> ***NOTE:** the initial auto-deps will be a few minutes.*
+> **n.b.** *The initial auto-deps will take a few minutes.*
 
 ### Available Make Targets
 

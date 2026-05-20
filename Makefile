@@ -7,25 +7,71 @@ LOCAL_PROJECTS_DIR ?= $(shell \
 		echo ~/.roswell/local-projects; \
 	fi)
 
-LISP ?= ros run
-QLOT ?= $(shell which qlot || if [ -f "$(HOME)/.roswell/bin/qlot" ]; then echo "$(HOME)/.roswell/bin/qlot"; else echo ""; fi)
+# The default lisp and implementation manager will be roswell and SBCL, but...
+# we will set a (ifeq) conditional so that we can target other implementations if needed...
+# like in the case of .github/workflows/CLASP.yml
+QLOT ?= $(shell which qlot)
+HAS_CLASP := $(shell command -v clasp 2> /dev/null)
+HAS_ROS   := $(shell command -v ros 2> /dev/null)
+ifndef TARGET_LISP
+    ifneq ($(HAS_CLASP),)
+        TARGET_LISP = clasp
+    else ifneq ($(HAS_ROS),)
+        TARGET_LISP = ros run
+    else
+        $(error "No Lisp environment found! Please install Roswell or Clasp.")
+    endif
+endif
+
+# I need to add (push #P"./" asdf:*central-registry*) somewhere
+# bsd-stub is a temporary patch for an issue that I need to review regarding libraries not being able to...
+# ...find sb-bsd-sockets despite it being loaded in by CLASP by default. I suspect CLASP names it something different...
+#.. but it's something I'll read up on later. So for now we will use a dummy stub using asdf:defsystem
+ifeq ($(TARGET_LISP), clasp)
+	LOAD_ASDF = (ql:quickload :asdf) (require "asdf")
+	bsd-stub = (asdf:defsystem "sb-bsd-sockets" :version "1.0" :components nil)
+	TEST_CMD = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(asdf:test-system :cl-freelock-tests)'
+	BENCH_CMD = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(ql:quickload :cl-freelock-benchmarks)' --eval '(cl-freelock-benchmarks:run-all-benchmarks $(if $(CSV_LOG),:log-file "$(CSV_LOG)" :append $(APPEND),))'
+	ASDF_PUSH = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(push (pathname "./") asdf:*central-registry*)'
+else ifeq ($(TARGET_LISP), ros run)
+	TEST_CMD = --non-interactive --eval '(ql:quickload :cl-freelock-tests)' --eval '(asdf:test-system :cl-freelock-tests)' --eval '(uiop:quit)'
+	BENCH_CMD = --non-interactive --eval '(ql:quickload :cl-freelock-benchmarks)' --eval '(cl-freelock-benchmarks:run-all-benchmarks $(if $(CSV_LOG),:log-file "$(CSV_LOG)" :append $(APPEND),))' --eval '(uiop:quit)'
+	ASDF_PUSH = --non-interactive --eval '(push (pathname "./") asdf:*central-registry*)'
+endif
+
 R_SCRIPT ?= Rscript
 APPEND ?= nil
 CSV_FILE ?= benchmark_results.csv
 
-.PHONY: all deps clean test test-local benchmark benchmark-st benchmark-all install-dev graphs help
+.PHONY: deps clean test test-local benchmark benchmark-st benchmark-all install-dev graphs help
 
-all: deps
+.DEFAULT_GOAL := help
 
-deps:
+target:
+	@echo "TARGET_LISP = $(TARGET_LISP)"
+	@echo ""
+	@echo "Detected binaries at \$$PATH:"
+	@echo "  Clasp:   $(if $(HAS_CLASP),$(HAS_CLASP),Not found)"
+	@echo "  Roswell: $(if $(HAS_ROS),$(HAS_ROS),Not found)"
+	@echo ""
+	@echo "To manually override the target for a specific command, append it like this:"
+	@echo "  make test TARGET_LISP=clasp"
+	@echo "  make test-local TARGET_LISP='ros run'"
+
+target:
+
+deps: 
 	@if [ -z "$(QLOT)" ]; then \
-		echo "[ERROR] qlot not found. Please install it (e.g., 'ros install qlot')."; \
+		echo "[ERROR] qlot not found. Please install it (e.g. roswell, curl, git, et cetera)."; \
 		exit 1; \
 	fi
 	@echo "--> Installing Lisp dependencies with qlot..."
 	@$(QLOT) install
 
 install-dev:
+	@echo "TARGET_LISP = $(TARGET_LISP)"
+	@echo "--> Pushing project to asdf registry..."
+	@$(TARGET_LISP) $(ASDF_PUSH)
 	@echo "--> Installing to local-projects..."
 	@mkdir -p $(LOCAL_PROJECTS_DIR)
 	@if [ -L $(LOCAL_PROJECTS_DIR)/cl-freelock ]; then \
@@ -35,41 +81,34 @@ install-dev:
 	@ln -sf $(PWD) $(LOCAL_PROJECTS_DIR)/cl-freelock
 	@echo "[OK] Symlinked to $(LOCAL_PROJECTS_DIR)/cl-freelock"
 
-
 test: deps
+	@echo "TARGET_LISP = $(TARGET_LISP)"
 	@echo "--> Running tests with qlot..."
-	@$(QLOT) exec $(LISP) --non-interactive \
-		--eval '(asdf:test-system :cl-freelock-tests)' \
-		--eval '(uiop:quit)'
+	@$(QLOT) exec $(TARGET_LISP) $(TEST_CMD)
+
 
 test-local:
-	@echo "--> Running tests with local Roswell environment (no qlot)..."
-	@$(LISP) --non-interactive \
+	@echo "--> Running (SBCL only for now) tests with local Roswell environment (no qlot)..."
+	@$(TARGET_LISP) --non-interactive \
 		--eval '(ql:quickload :cl-freelock-tests)' \
 		--eval '(asdf:test-system :cl-freelock-tests)' \
 		--eval '(uiop:quit)'
 
 
-# Conditionally adds :log-file parameter if CSV_LOG is set.
-define run_benchmark
-	@$(QLOT) exec $(LISP) --non-interactive \
-		$(1) \
-		--eval '(ql:quickload :cl-freelock-benchmarks)' \
-		--eval '(cl-freelock-benchmarks:run-all-benchmarks $(if $(CSV_LOG),:log-file "$(CSV_LOG)" :append $(APPEND),))' \
-		--eval '(uiop:quit)'
-endef
-
 benchmark: deps
+	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
 	@echo "--> Running benchmark suite (multi-threaded default)..."
 	@if [ -n "$(CSV_LOG)" ]; then echo "Saving results to $(CSV_LOG)"; fi
-	@$(call run_benchmark)
+	@$(QLOT) exec $(TARGET_LISP) $(BENCH_CMD)
 
 benchmark-st: deps
+	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
 	@echo "--> Running benchmark suite (single-threaded optimized)..."
 	@if [ -n "$(CSV_LOG)" ]; then echo "Saving results to $(CSV_LOG)"; fi
-	@$(call run_benchmark, --eval '(push :cl-freelock-single-threaded *features*)')
+	@$(QLOT) exec $(TARGET_LISP) --eval '(push :cl-freelock-single-threaded *features*)' $(BENCH_CMD)
 
 benchmark-all: deps
+	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
 	@echo "--> Running ALL benchmark suites..."
 	@if [ -z "$(CSV_LOG)" ]; then \
 		echo "[ERROR] Must specify CSV_LOG for benchmark-all. Example: make benchmark-all CSV_LOG=results.csv"; \
@@ -108,9 +147,9 @@ clean:
 	@echo "Clean complete."
 
 help:
-	@echo "cl-freelock Build System"
+	@echo "cl-freelock makefile"
 	@echo ""
-	@echo "== Common Commands =="
+	@echo "== Available Commands =="
 	@echo "  make deps                  - Install dependencies using qlot."
 	@echo "  make test                  - Run tests in a reproducible qlot environment."
 	@echo "  make test-local            - Run tests with system Lisp (no qlot)."
@@ -118,5 +157,7 @@ help:
 	@echo "  make benchmark-st          - Run single-threaded benchmarks. Add CSV_LOG=file.csv to save."
 	@echo "  make benchmark-all         - Run all benchmarks and save to a file (CSV_LOG is required)."
 	@echo "  make graphs                - Generate plots from a CSV file (e.g., make graphs CSV_FILE=results.csv)."
-	@echo "  make install-dev           - Symlink the project to your local-projects directory."
+	@echo "  make install-dev           - Symlink the project to your local-projects directory and push to ASDF registry."
+	@echo "  make target                - See what implementation the makefile is currently targeting."
 	@echo "  make clean                 - Clean all build artifacts."
+	@echo "  [n.b.] Benchmarks do not support CLASP yet!"

@@ -24,7 +24,7 @@ RUN useradd -m -s /bin/bash builder && \
 USER builder
 WORKDIR /home/builder
 
-# Install Roswell from source - more reliable approach
+# Install Roswell from source -- more reliable approach
 RUN git clone https://github.com/roswell/roswell.git && \
     cd roswell && \
     sh bootstrap && \
@@ -32,13 +32,12 @@ RUN git clone https://github.com/roswell/roswell.git && \
     make && \
     make install
 
-# Add local bin to PATH
-ENV PATH="/home/builder/.local/bin:${PATH}"
-
-# Change to app directory
 WORKDIR /home/builder/app
 
-# Now setup Roswell and install dependencies
+# With the new makefile logic, if we don't specify where the path is...
+#, docker will not be able to find qlot installed via roswell.
+ENV PATH="/home/builder/.local/bin:/home/builder/.roswell/bin:${PATH}"
+
 RUN ros setup && \
     ros install sbcl-bin && \
     ros install qlot

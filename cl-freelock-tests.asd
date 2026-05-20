@@ -1,4 +1,4 @@
-(asdf:defsystem #:cl-freelock-tests
+(asdf:defsystem :cl-freelock-tests
   :description "Test suite for cl-freelock."
   :author "Andrew D. France andrewforlua@gmail.com"
   :license "MIT"
@@ -8,7 +8,6 @@
                  :components
                  ((:file "main")
                   (:file "bounded-queue")
-                  (:file "spsc-queue"))))
-  :in-order-to ((test-op (load-op cl-freelock-tests))))
+                  (:file "spsc-queue")))))
 
 ;; I haven't decided yet on if I want to use `:module` or `"subdir/file"`in our asd files.

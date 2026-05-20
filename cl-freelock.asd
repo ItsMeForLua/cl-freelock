@@ -15,7 +15,8 @@
                (:file "src/atomics")
                (:file "src/queue")
                (:file "src/bounded-queue")
-               (:file "src/spsc-queue")))
+               (:file "src/spsc-queue"))
+  :in-order-to ((test-op (test-op :cl-freelock-tests))))
 
 ;; TODO: 
 ;; We need to make the docstrings a bit more consistent and user-friendly...
