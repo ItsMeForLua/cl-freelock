@@ -4,7 +4,8 @@ name: qlot-cron
 
 on:
   schedule:
-    - cron: '0 5 * * 5'
+    - cron: '20/15 * * * *'
+    # '0 5 * * 5'
 
 jobs:
   setup-and-check-dep-compatability:
