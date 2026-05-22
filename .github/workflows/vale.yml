@@ -14,3 +14,4 @@ jobs:
         with:
           files: docs/index.html
           fail_on_error: true
+          reviewer: false
