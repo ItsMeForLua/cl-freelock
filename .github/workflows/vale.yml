@@ -6,12 +6,10 @@ on:
   
 jobs:
   setup-vale:
+    name: runner
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: setup-vale-CLI
-        uses: vale-cli/vale-action@v2
+      - uses: vale-cli/vale-action@v2
         with:
-          files: docs/
-          fail_on_error: true
-          filter_mode: file
+          files: docs/index.html

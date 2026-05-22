@@ -105,4 +105,7 @@ auto-run:
 	@$(MAKE) limages FILE="$(FILE)"
 	@$(MAKE) docs FILE="$(FILE)"
 	@$(MAKE) clean-all-exclude-docs FILE="$(FILE)"
+	@rm -rf tex/docs 2>/dev/null || true
+	@rm -rf tex/imgs 2>/dev/null || true
+	@rm $(FILE).pdf 2>/dev/null || true
 	@echo "FILE=$(FILE): completed."
