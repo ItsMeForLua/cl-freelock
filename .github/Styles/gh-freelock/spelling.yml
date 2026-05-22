@@ -1,3 +1,3 @@
 extends: spelling
-message: "Spell Check: '%s' -- add word to accept.txt to ignore."
+message: "Spell Check: '%s'"
 level: warning
