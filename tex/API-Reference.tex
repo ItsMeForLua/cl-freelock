@@ -86,13 +86,23 @@ ImagesName={lateximg-}
 	\begin{lstlisting}
 (ql:quickload :cl-freelock)
 	\end{lstlisting}
-	
+	For now, clone the repository into your Quicklisp local-projects directory:
+	\begin{lstlisting}
+cd ~/quicklisp/local-projects/
+git clone https://github.com/ItsMeForLua/cl-freelock.git
+	\end{lstlisting}
+	Then, load the system in your REPL:
+	\begin{lstlisting}
+(ql:quickload :cl-freelock)
+	\end{lstlisting}
+
 	\section{Basic Usage}
-	In this section, we will go over the basic usage of Producer-Consumer with unbounded queue, Bounded Buffers, SPSC, error handling, and atomic operations.
+	In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+	
 	
 	\subsection{Producer-Consumer with Unbounded Queue}
-	(defparameter *work-queue* (make-queue))
 	\begin{lstlisting}
+(defparameter *work-queue* (make-queue))
 ;; Producer thread
 (defun producer ()
 (loop for i from 1 to 1000 do
@@ -108,5 +118,60 @@ ImagesName={lateximg-}
 (format t "Processing: ~A~%" item)
 (sleep 0.001)))))
 	\end{lstlisting}
+	
+	\subsection{Bounded Buffer}
+	\begin{lstlisting}
+(defparameter *buffer* (make-bounded-queue 64))  ; Must be power of 2
+
+;; Non-blocking operations
+(when (bounded-queue-push *buffer* "data")
+(format t "Push succeeded~%"))
+
+(multiple-value-bind (value success)
+(bounded-queue-pop *buffer*)
+(when success
+(format t "Got: ~A~%" value)))
+	\end{lstlisting}
+	
+	\subsection{SPSC}
+	\begin{lstlisting}
+(defparameter *spsc* (make-spsc-queue 256))  ; Must be power of 2
+
+;; Producer thread only
+(when (spsc-push *spsc* "fast-data")
+(format t "Pushed successfully~%"))
+
+;; Consumer thread only  
+(multiple-value-bind (value success)
+(spsc-pop *spsc*)
+(when success
+(format t "Got: ~A~%" value)))
+	\end{lstlisting}
+	
+	\subsection{Error Handling}
+	Operations return multiple values to indicate success/failure rather than signaling conditions:
+	\begin{lstlisting}
+;; Always check the second return value
+(multiple-value-bind (value success)
+(queue-pop *queue*)
+(if success
+(process value)
+(handle-empty-queue)))
+	\end{lstlisting}
+	
+	\section{Atomic Operations}
+	\subsection{Types}
+	\subsubsection{ATOMIC-REF}
+	\subsection{Functions}
+	\subsubsection{MAKE-ATOMIC-REF}
+	\subsubsection{ATOMIC-REF-VALUE}
+	
+	\subsection{Macros}
+	\subsubsection{CAS}
+	\subsubsection{ATOMIC-INCF}
+	
+	\subsection{Utility Functions}
+	\subsubsection{MEMORY-BARRIER}
+	
 \end{document}
 	

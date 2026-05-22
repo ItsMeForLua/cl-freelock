@@ -467,14 +467,98 @@ May 22, 2026
 
 
 <p>
-<a href="API-Reference.html#autosec-6" class="tocsection" >
+<a href="API-Reference.html#autosec-8" class="tocsection" >
 <span class="sectionnumber">2</span>&#x2003;Basic Usage</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-7" class="tocsubsection" >
+<a href="API-Reference.html#autosec-9" class="tocsubsection" >
 <span class="sectionnumber">2.1</span>&#x2003;Producer-Consumer with Unbounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-11" class="tocsubsection" >
+<span class="sectionnumber">2.2</span>&#x2003;Bounded Buffer</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-13" class="tocsubsection" >
+<span class="sectionnumber">2.3</span>&#x2003;SPSC</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-15" class="tocsubsection" >
+<span class="sectionnumber">2.4</span>&#x2003;Error Handling</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-17" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Atomic Operations</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-18" class="tocsubsection" >
+<span class="sectionnumber">3.1</span>&#x2003;Types</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-19" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.1</span>&#x2003;ATOMIC-REF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-20" class="tocsubsection" >
+<span class="sectionnumber">3.2</span>&#x2003;Functions</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-21" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.1</span>&#x2003;MAKE-ATOMIC-REF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-22" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.2</span>&#x2003;ATOMIC-REF-VALUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-23" class="tocsubsection" >
+<span class="sectionnumber">3.3</span>&#x2003;Macros</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-24" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.1</span>&#x2003;CAS</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-25" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.2</span>&#x2003;ATOMIC-INCF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsubsection" >
+<span class="sectionnumber">3.4</span>&#x2003;Utility Functions</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-27" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.1</span>&#x2003;MEMORY-BARRIER</a>
 </p>
 </nav>
 <!--
@@ -497,30 +581,55 @@ Once available on quicklisp, you will be able to simply run:
 
     <div class="figurecaption">
 </div>
-<!--
-...... section Basic Usage ......
--->
-<h4 id="autosec-6"><span class="sectionnumber">2&#x2003;</span>Basic Usage</h4>
-<a id="API-Reference-autopage-6"></a>
-
 
 <p>
-In this section, we will go over the basic usage of Producer-Consumer with unbounded queue, Bounded Buffers, SPSC, error handling, and atomic operations.
-</p>
-<!--
-...... subsection Producer-Consumer with Unbounded Queue ......
--->
-<h5 id="autosec-7"><span class="sectionnumber">2.1&#x2003;</span>Producer-Consumer with Unbounded Queue</h5>
-<a id="API-Reference-autopage-7"></a>
-
-
-<p>
-(defparameter *work-queue* (make-queue))
+For now, clone the repository into your Quicklisp local-projects directory:
 </p>
 <div class="figurecaption">
 
 </div>
 <pre class="programlisting">
+cd ~/quicklisp/local-projects/
+git clone https://github.com/ItsMeForLua/cl-freelock.git
+
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+Then, load the system in your REPL:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(ql:quickload :cl-freelock)
+
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... section Basic Usage ......
+-->
+<h4 id="autosec-8"><span class="sectionnumber">2&#x2003;</span>Basic Usage</h4>
+<a id="API-Reference-autopage-8"></a>
+
+
+<p>
+In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+</p>
+<!--
+...... subsection Producer-Consumer with Unbounded Queue ......
+-->
+<h5 id="autosec-9"><span class="sectionnumber">2.1&#x2003;</span>Producer-Consumer with Unbounded Queue</h5>
+<a id="API-Reference-autopage-9"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *work-queue* (make-queue))
 ;; Producer thread
 (defun producer ()
 (loop for i from 1 to 1000 do
@@ -540,6 +649,136 @@ In this section, we will go over the basic usage of Producer-Consumer with unbou
 
     <div class="figurecaption">
 </div>
+<!--
+...... subsection Bounded Buffer ......
+-->
+<h5 id="autosec-11"><span class="sectionnumber">2.2&#x2003;</span>Bounded Buffer</h5>
+<a id="API-Reference-autopage-11"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *buffer* (make-bounded-queue 64))   ; Must be power of 2
+
+;; Non-blocking operations
+(when (bounded-queue-push *buffer* "data")
+(format t "Push succeeded~&percnt;"))
+
+(multiple-value-bind (value success)
+(bounded-queue-pop *buffer*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection SPSC ......
+-->
+<h5 id="autosec-13"><span class="sectionnumber">2.3&#x2003;</span>SPSC</h5>
+<a id="API-Reference-autopage-13"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *spsc* (make-spsc-queue 256))   ; Must be power of 2
+
+;; Producer thread only
+(when (spsc-push *spsc* "fast-data")
+(format t "Pushed successfully~&percnt;"))
+
+;; Consumer thread only
+(multiple-value-bind (value success)
+(spsc-pop *spsc*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection Error Handling ......
+-->
+<h5 id="autosec-15"><span class="sectionnumber">2.4&#x2003;</span>Error Handling</h5>
+<a id="API-Reference-autopage-15"></a>
+
+
+<p>
+Operations return multiple values to indicate success/failure rather than signaling conditions:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+;; Always check the second return value
+(multiple-value-bind (value success)
+(queue-pop *queue*)
+(if success
+(process value)
+(handle-empty-queue)))
+
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... section Atomic Operations ......
+-->
+<h4 id="autosec-17"><span class="sectionnumber">3&#x2003;</span>Atomic Operations</h4>
+<a id="API-Reference-autopage-17"></a>
+<!--
+...... subsection Types ......
+-->
+<h5 id="autosec-18"><span class="sectionnumber">3.1&#x2003;</span>Types</h5>
+<a id="API-Reference-autopage-18"></a>
+<!--
+...... subsubsection ATOMIC-REF ......
+-->
+<h6 id="autosec-19"><span class="sectionnumber">3.1.1&#x2003;</span>ATOMIC-REF</h6>
+<a id="API-Reference-autopage-19"></a>
+<!--
+...... subsection Functions ......
+-->
+<h5 id="autosec-20"><span class="sectionnumber">3.2&#x2003;</span>Functions</h5>
+<a id="API-Reference-autopage-20"></a>
+<!--
+...... subsubsection MAKE-ATOMIC-REF ......
+-->
+<h6 id="autosec-21"><span class="sectionnumber">3.2.1&#x2003;</span>MAKE-ATOMIC-REF</h6>
+<a id="API-Reference-autopage-21"></a>
+<!--
+...... subsubsection ATOMIC-REF-VALUE ......
+-->
+<h6 id="autosec-22"><span class="sectionnumber">3.2.2&#x2003;</span>ATOMIC-REF-VALUE</h6>
+<a id="API-Reference-autopage-22"></a>
+<!--
+...... subsection Macros ......
+-->
+<h5 id="autosec-23"><span class="sectionnumber">3.3&#x2003;</span>Macros</h5>
+<a id="API-Reference-autopage-23"></a>
+<!--
+...... subsubsection CAS ......
+-->
+<h6 id="autosec-24"><span class="sectionnumber">3.3.1&#x2003;</span>CAS</h6>
+<a id="API-Reference-autopage-24"></a>
+<!--
+...... subsubsection ATOMIC-INCF ......
+-->
+<h6 id="autosec-25"><span class="sectionnumber">3.3.2&#x2003;</span>ATOMIC-INCF</h6>
+<a id="API-Reference-autopage-25"></a>
+<!--
+...... subsection Utility Functions ......
+-->
+<h5 id="autosec-26"><span class="sectionnumber">3.4&#x2003;</span>Utility Functions</h5>
+<a id="API-Reference-autopage-26"></a>
+<!--
+...... subsubsection MEMORY-BARRIER ......
+-->
+<h6 id="autosec-27"><span class="sectionnumber">3.4.1&#x2003;</span>MEMORY-BARRIER</h6>
+<a id="API-Reference-autopage-27"></a>
+
 
 <a id="API-Reference-autofile-last"></a>
 </section>
