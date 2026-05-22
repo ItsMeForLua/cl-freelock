@@ -13,5 +13,5 @@ jobs:
       - uses: vale-cli/vale-action@v2
         with:
           files: docs/index.html
+          reporter: github-check
           fail_on_error: true
-          reviewer: false
