@@ -1,0 +1,4 @@
+extends: spelling
+message: "Spell Check: '%s' -- add word to vocab.txt to ignore."
+level: error
+ignore: .github/Styles/gh-freelock/vocab.txt
