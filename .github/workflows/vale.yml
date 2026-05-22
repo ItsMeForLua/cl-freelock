@@ -13,3 +13,4 @@ jobs:
       - uses: vale-cli/vale-action@v2
         with:
           files: docs/index.html
+          fail_on_error: true
