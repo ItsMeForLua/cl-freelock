@@ -1,3 +1,0 @@
-extends: spelling
-message: "Spell Check: '%s'"
-level: warning
