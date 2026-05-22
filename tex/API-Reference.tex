@@ -1,0 +1,112 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[
+mathjax,
+ImagesDirectory=imgs,
+ImagesName={lateximg-}
+]{lwarp}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\doublespacing
+\usepackage{csquotes}
+\usepackage{textalpha}
+\usepackage{alphabeta}
+
+\setlength{\marginparwidth}{2cm}
+\usepackage[disable]{todonotes}
+
+\DeclareUnicodeCharacter{2227}{\ensuremath{\wedge}}
+\DeclareUnicodeCharacter{00AC}{\ensuremath{\neg}}
+\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}
+
+\usepackage{amsmath, amssymb, graphicx}
+\usepackage{textcomp}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{calc, positioning}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage[font=small]{caption}
+\usepackage{mathtools}
+\usepackage{comment}
+
+\usepackage[notes,backend=biber]{biblatex-chicago} 
+\addbibresource{references.bib}
+
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+
+\DeclareRobustCommand{\code}[1]{%
+	\begingroup
+	\setlength{\fboxsep}{2pt}%
+	\colorbox{gray!15}{\ttfamily\small #1}%
+	\endgroup
+}
+\widowpenalty=10000
+\clubpenalty=10000
+\lstset{
+	language=Lisp,
+	basicstyle=\ttfamily\small\linespread{1}\selectfont\raggedright,
+	morekeywords={define, struct, hash, lambda, for/fold, hash-update},
+	columns=fullflexible,
+	keepspaces=true,
+	upquote=true,
+	keywordstyle=\color{blue}\bfseries,
+	commentstyle=\color{green!60!black}\itshape,
+	stringstyle=\color{red},
+	breaklines=true,
+	frame=single,
+	backgroundcolor=\color{gray!10},
+	showstringspaces=false,
+	aboveskip=1.5em,
+	belowskip=1.5em,
+	xleftmargin=0pt
+}
+
+\title{cl-freelock api reference}
+\author{Andrew D. France}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\newpage
+	
+	\tableofcontents
+	\newpage
+	
+	\section{Getting Started: Installation}
+	Once available on quicklisp, you will be able to simply run:
+	\begin{lstlisting}
+(ql:quickload :cl-freelock)
+	\end{lstlisting}
+	
+	\section{Basic Usage}
+	In this section, we will go over the basic usage of Producer-Consumer with unbounded queue, Bounded Buffers, SPSC, error handling, and atomic operations.
+	
+	\subsection{Producer-Consumer with Unbounded Queue}
+	(defparameter *work-queue* (make-queue))
+	\begin{lstlisting}
+;; Producer thread
+(defun producer ()
+(loop for i from 1 to 1000 do
+(queue-push *work-queue* i)
+(sleep 0.001)))
+
+;; Consumer thread
+(defun consumer ()
+(loop
+(multiple-value-bind (item found)
+(queue-pop *work-queue*)
+(if found
+(format t "Processing: ~A~%" item)
+(sleep 0.001)))))
+	\end{lstlisting}
+\end{document}
+	

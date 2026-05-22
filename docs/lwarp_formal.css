@@ -1,0 +1,187 @@
+@import url("lwarp.css") ;
+
+A:link {color:#802020 ; text-decoration:none; }
+A:visited {color:#802020 ; text-shadow:none ;}
+A:hover {color:#400000 ; text-shadow:none ;}
+A:active {color:#C00000 ; text-shadow:none ;}
+
+body {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    background: #fffcf5;
+}
+
+span.textrm {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+}
+
+span.textsf {
+     font-family: "DejaVu Sans", "Bitstream Vera Sans",
+        Geneva, Verdana, sans-serif ;
+}
+
+div.book, h1, h2, h3, h4, h5, h6, span.paragraph, span.subparagraph
+{
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: #800000 ;
+    text-shadow: none ;
+}
+
+h1, h2 {
+    background-color: #fffcf5 ;
+    background-image: none ;
+    border-bottom: 1px solid #808080;
+/*    border-top: 2px solid #808080; */
+}
+
+div.abstracttitle {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: black ;
+    text-shadow: none ;
+}
+
+span.abstractrunintitle {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: black ;
+    text-shadow: none ;
+}
+
+div.abstract { font-size: 100% }
+
+.sidebar {
+    background: #fffcf5;
+    background-image: none ;
+  margin: 2em 5% 2em 5%;
+  padding: 0.5em 1em;
+  border: none ;
+  border-top : 1px solid silver;
+  border-bottom : 1px solid silver;
+  font-size: 90% ;
+}
+
+div.sidebartitle{
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: #800000 ;
+    text-shadow: none ;
+    border: none ;
+}
+
+.example {
+    background: #fffcf5;
+    background-image: none ;
+  margin: 2em 5% 2em 5%;
+  padding: 0.5em 1em;
+  border: none ;
+  border-top : 1px solid silver;
+  border-bottom : 1px solid silver;
+}
+
+div.exampletitle{
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: #800000 ;
+    text-shadow: none ;
+    border: none ;
+}
+
+div.fancyvrblabel{
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    color: #800000 ;
+    text-shadow: none ;
+    border: none ;
+}
+
+figure {
+    margin: 5ex 5% 5ex 5% ;
+    padding: 1ex 1em 1ex 1em ;
+    background-color: #fffcf5 ;
+    overflow-x: auto ;
+    border: none ;
+/*     border-top: 1px solid silver; */
+/*     border-bottom: 1px solid silver; */
+}
+
+div.figurecaption , .lstlisting {
+    border: none ;
+/*     border-top: 1px solid silver ; */
+/*     border-bottom: 1px solid silver ; */
+    background-color: #fffcf5 ;
+}
+
+.tnotes {
+    background: #fffcf5 ;
+    border-top: 1px solid silver ;
+    border-bottom: 1px solid silver ;
+}
+
+.theorem {
+        background: none ;
+}
+
+.minipage {
+    background-color: #fffcf5 ;
+    border: none ;
+}
+
+div.floatrow figure { border: none ; }
+
+figure figure { border: none ; }
+
+nav.toc, nav.lof, nav.lot, nav.lol {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+}
+
+div.sidetoccontainer {
+    font-family: "Linux Libertine O", "Hoefler Text", "Garamond",
+        "Bembo", "Janson", "TeX Gyre Pagella", "Palatino",
+        "Liberation Serif", "Nimbus Roman No 9 L",  "FreeSerif", Times,
+        "Times New Roman", serif;
+    background-image: linear-gradient(to bottom, #fffcf5, #C0C0C0);
+}
+
+div.sidetoctitle{
+    color: #800000 ;
+}
+
+header{
+    background-color: #e0e0e0 ;
+    background-image: linear-gradient(to top, #fffcf5, #b0b0b0);
+    text-align:center ;
+}
+
+footer{
+    background-color: #e0e0e0 ;
+    background-image: linear-gradient(to bottom, #fffcf5, #b0b0b0);
+    padding: 2ex 1em 2ex 1em ;
+    text-align:left ;
+}
+
+nav.botnavigation {
+    background: #dedcd5 ;
+    border-top: 1px solid black ;
+}

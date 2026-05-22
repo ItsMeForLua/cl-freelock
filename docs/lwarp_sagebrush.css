@@ -1,0 +1,226 @@
+@import url("lwarp.css") ;
+
+A:link {color:#105030 ; text-decoration: none ; }
+A:visited {color:#705030 ; text-shadow:1px 1px 2px #a0a0a0;}
+A:hover {color:#006000 ; text-decoration: underline ; text-shadow:0px 0px 2px #a0a0a0;}
+A:active {color:#00C000 ; text-shadow:1px 1px 2px #a0a0a0;}
+
+div.book, h1, h2, h3, h4, h5, h6, span.paragraph, span.subparagraph
+{
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif",
+        "Nimbus Roman No 9 L",  "FreeSerif",
+        "Hoefler Text", Times, "Times New Roman", serif;
+    font-variant: small-caps ;
+    font-weight: normal ;
+    color: #304070 ;
+    text-shadow: 2px 2px 3px #808080;
+}
+
+h1 {    /* title of the entire website, used on each page */
+    font-variant: small-caps ;
+    color: #304070 ;
+    text-shadow: 2px 2px 3px #808080;
+    background-color: #F7F7F0 ;
+    background-image: linear-gradient(to bottom, #F7F7F0, #C0C0C4);
+}
+
+h1 {
+  border-bottom: 1px solid #304070;
+/*  border-top: 2px solid #304070; */
+}
+
+h2 {
+  border-bottom: 1px solid #304070;
+/*  border-top: 2px solid #304070; */
+    background-color: #F7F7F0 ;
+    background-image: linear-gradient(to bottom, #F7F7F0, #DAD0C0);
+}
+
+div.abstract {
+    background: #f5f5eb ;
+    background-image: linear-gradient(to bottom, #f5f5eb, #C8C8B8);
+
+  border: 1px solid silver;
+    border-radius: 1em ;
+}
+
+div.abstract dl {line-height:1.5;}
+div.abstract dt {color:#304070;}
+
+div.abstracttitle{
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif", "Nimbus Roman No 9 L",
+        "FreeSerif", "Hoefler Text", Times, "Times New Roman", serif;
+    font-weight:bold;
+    font-variant: small-caps ;
+    font-size:1.5em;
+    border-bottom: 1px solid silver ;
+    color: #304070 ;
+    text-align: center ;
+    text-shadow: 1px 1px 2px #808080;
+}
+
+span.abstractrunintitle{
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif", "Nimbus Roman No 9 L",
+        "FreeSerif", "Hoefler Text", Times, "Times New Roman", serif;
+    font-weight:bold;
+}
+
+div.epigraph, div.dictum {
+    background: #f5f5eb ;
+    background-image: linear-gradient(to bottom, #f5f5eb, #C8C8B8);
+
+    border: 1px solid silver ;
+    border-radius: 1ex ;
+    box-shadow: 3px 3px 3px #808080 ;
+}
+
+.example {
+    background-color: #f5f5eb ;
+    background-image: linear-gradient(to bottom, #f5f5eb, #C8C8B8);
+    margin: 3ex 4em 2ex 4em ;
+}
+
+div.exampletitle{
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif", "Nimbus Roman No 9 L",
+        "FreeSerif", "Hoefler Text", Times, "Times New Roman", serif;
+    font-weight:bold;
+    font-variant: small-caps ;
+    border-bottom: 1px solid silver ;
+    color: #304070 ;
+    text-align: center ;
+    text-shadow: 1px 1px 2px #808080;
+}
+
+.sidebar {
+    background-color: #f5f5eb ;
+    background-image: linear-gradient(to bottom, #f5f5eb, #C8C8B8);
+    margin: 3ex 4em 2ex 4em ;
+}
+
+div.sidebartitle{
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif", "Nimbus Roman No 9 L",
+        "FreeSerif", "Hoefler Text", Times, "Times New Roman", serif;
+    font-weight:bold;
+    font-variant: small-caps ;
+    border-bottom: 1px solid silver ;
+    color: #304070 ;
+    text-align: center ;
+    text-shadow: 1px 1px 2px #808080;
+}
+
+.fancyvrblabel {
+    font-family: "URW Classico", Optima, "Linux Biolinum O",
+        "Linux Libertine O", "Liberation Serif", "Nimbus Roman No 9 L",
+        "FreeSerif", "Hoefler Text", Times, "Times New Roman", serif;
+    font-weight:bold;
+    font-variant: small-caps ;
+    font-size: 1.5em ;
+    color: #304070 ;
+    text-align: center ;
+    text-shadow: 1px 1px 2px #808080;
+}
+
+div.minipage {
+    background-color: #eeeee7 ;
+    border: 1px solid silver ;
+    border-radius: 1ex ;
+}
+
+table div.minipage { background: none ; border: none ; }
+
+div.framebox div.minipage {border:none ; background:none}
+
+section.textbody > div.minipage {
+    box-shadow: 3px 3px 3px #808080 ;
+}
+
+div.fboxBlock div.minipage { box-shadow: none ; }
+
+.framed .minipage , .framedleftbar .minipage {
+    border: none ;
+    background: none ;
+    padding: 0ex ;
+    margin: 0ex ;
+}
+
+figure.figure .minipage, div.figurecaption .minipage { border: none; }
+
+div.marginblock div.minipage ,
+div.marginparblock div.minipage
+    { border: none; }
+
+figure , div.marginblock {
+    background-color: #eeeee7 ;
+    border: 1px solid silver ;
+    border-radius: 1ex ;
+    box-shadow: 3px 3px 3px #808080 ;
+}
+
+figure figure {
+    border: 1px solid silver ;
+    margin: 0em ;
+    box-shadow: none ;
+}
+
+/*
+div.figurecaption {
+    border-top: 1px solid silver ;
+    border-bottom: 1px solid silver ;
+    background-color: #e8e8e8 ;
+}
+*/
+
+div.table {
+    box-shadow: 3px 3px 3px #808080 ;
+}
+
+/*
+.tnotes {
+    background: #e8e8e8;
+    border: 1px solid silver;
+}
+*/
+
+nav.topnavigation{
+    background-color: #b0b8b0 ;
+    background-image: linear-gradient(to bottom,#e0e0e0,#b0b8b0) ;
+}
+
+nav.botnavigation{
+    background-color: #b0b8b0 ;
+    background-image: linear-gradient(to top,#e0e0e0,#b0b8b0) ;
+}
+
+header{
+    background-color: #F7F7F0 ;
+    background-image: linear-gradient(to top, #F7F7F0, #b0b8b0);
+}
+
+footer{
+    background-color: #F7F7F0 ;
+    background-image: linear-gradient(to bottom, #F7F7F0, #b0b8b0);
+}
+
+div.sidetoccontainer {
+    background-color: #F7F7F0 ;
+    background-image: linear-gradient(to bottom, #F7F7F0, #C0C0C0);
+    box-shadow: 3px 3px 3px #808080 ;
+    }
+
+div.sidetoctitle {color: #304070 ; }
+
+nav.sidetoc a:hover {
+    color:#006000 ;
+    text-decoration: none ;
+    text-shadow:0px 0px 2px #a0a0a0;
+}
+
+@media screen and (max-width: 45em) {
+    div.sidetoccontainer { border-radius: 0 ; }
+}
+
