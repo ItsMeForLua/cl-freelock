@@ -1,0 +1,17 @@
+extends: existence
+message: "Superficial analysis detected: '%s'. Attach claims to specific evidence, not significance assertions."
+level: warning
+ignorecase: true
+tokens:
+  - align with
+  - lasting influence
+  - symbolizing
+  - contributing to
+  - stands as
+  - not merely
+  - not just
+  - foundational core
+  - refers strictly
+  - comprehensive understanding
+  - thorough understanding
+  - deep understanding

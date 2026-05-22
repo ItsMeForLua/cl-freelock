@@ -1,0 +1,18 @@
+extends: substitution
+message: "Colloquial or incorrect phrasing: Use '%s' instead of '%s'."
+level: warning
+ignorecase: true
+swap:
+  in regards to: regarding
+  with regards to: regarding
+  in otherwords: in other words
+  the act of: '[a verb]'
+  the task of: '[a verb]'
+  this paper: we
+  this paper argues: we argue
+  this paper shows: the results show
+  this report presents: we present
+  this paper presents: we present
+  this report finds: analysis reveals
+  this manuscript: this work
+  obviously: naturally

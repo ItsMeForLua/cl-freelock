@@ -1,0 +1,52 @@
+extends: existence
+message: "Defensive writing detected: '%s'. Trust your established context."
+level: warning
+ignorecase: true
+tokens:
+  - in question
+  - needless to say
+  - as mentioned previously
+  - it goes without saying
+  - is critical
+  - is crucial
+  - is essential
+  - is vital
+  - is paramount
+  - is imperative
+  - 'as an?\s+\w+\s+problem'
+  - it can be concluded
+  - it can thus be concluded
+  - it can therefore be concluded
+  - as we demonstrate
+  - We demonstrate
+  - in summary
+  - in conclusion
+  - overall
+  - taken together
+  - together these findings
+  - together, these findings
+  - in closing
+  - to summarize
+  - to conclude
+  - in brief
+  - in short
+  - as demonstrated above
+  - as shown above
+  - as discussed above
+  - as mentioned above
+  - it is clear that
+  - it is evident that
+  - it is apparent that
+  - it is worth noting
+  - it is important to note
+  - it is worth mentioning
+  - strictly to the specific
+  - formal academic
+  - mathematical limitations
+  - mathematical limitation
+  - mathematically limited
+  - in-depth exploration
+  - in-depth analysis
+  - in-depth explanation
+  - in-depth investigation
+  - in-depth evaluation

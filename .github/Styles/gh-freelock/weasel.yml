@@ -1,0 +1,20 @@
+extends: existence
+message: "Weasel word detected: '%s'. Do not use emotional intensifiers. If you need a modifier, use: 'sufficiently' (for thresholds), 'strictly' (for absolutes), or 'primarily' (for majorities)."
+level: warning
+ignorecase: true
+tokens:
+  - \bhighly\b
+  - '(?<![\\\[])\bvery\b(?!\s+(?:thick|thin|loosely|densely|near|far))'
+  - \bextremely\b
+  - \bincredibly\b
+  - '\bcompletely\b(?!\s+(?:determined|constrained|specified|defined|independent|orthogonal|arbitrary))'
+  - \bdeeply\b
+  - \bmassive\b
+  - 'quite\s+(?:remarkable|extraordinary|unique|impressive|powerful|important|surprising)'
+  - \bis perfect\b
+  - \bis perfectly\b
+  - 'profound\s+(?:impact|improvement|implications|advantages|changes|effects|difference)'
+  - \bthis is important\b
+  - \bprofound\b
+  - \babsolutely necessary\b
+  - \bexhaustive\b
