@@ -1,163 +1,105 @@
-LOCAL_PROJECTS_DIR ?= $(shell \
-	if [ -d ~/.roswell/local-projects ]; then \
-		echo ~/.roswell/local-projects; \
-	elif [ -d ~/quicklisp/local-projects ]; then \
-		echo ~/quicklisp/local-projects; \
-	else \
-		echo ~/.roswell/local-projects; \
-	fi)
-
-# The default lisp and implementation manager will be roswell and SBCL, but...
-# we will set a (ifeq) conditional so that we can target other implementations if needed...
-# like in the case of .github/workflows/CLASP.yml
-QLOT ?= $(shell which qlot)
-HAS_CLASP := $(shell command -v clasp 2> /dev/null)
-HAS_ROS   := $(shell command -v ros 2> /dev/null)
-ifndef TARGET_LISP
-    ifneq ($(HAS_CLASP),)
-        TARGET_LISP = clasp
-    else ifneq ($(HAS_ROS),)
-        TARGET_LISP = ros run
-    else
-        $(error "No Lisp environment found! Please install Roswell or Clasp.")
-    endif
-endif
-
-# I need to add (push #P"./" asdf:*central-registry*) somewhere
-# bsd-stub is a temporary patch for an issue that I need to review regarding libraries not being able to...
-# ...find sb-bsd-sockets despite it being loaded in by CLASP by default. I suspect CLASP names it something different...
-#.. but it's something I'll read up on later. So for now we will use a dummy stub using asdf:defsystem
-ifeq ($(TARGET_LISP), clasp)
-	LOAD_ASDF = (ql:quickload :asdf) (require "asdf")
-	bsd-stub = (asdf:defsystem "sb-bsd-sockets" :version "1.0" :components nil)
-	TEST_CMD = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(asdf:test-system :cl-freelock-tests)'
-	BENCH_CMD = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(ql:quickload :cl-freelock-benchmarks)' --eval '(cl-freelock-benchmarks:run-all-benchmarks $(if $(CSV_LOG),:log-file "$(CSV_LOG)" :append $(APPEND),))'
-	ASDF_PUSH = --non-interactive --eval '$(LOAD_ASDF)' --eval '$(bsd-stub)' --eval '(push (pathname "./") asdf:*central-registry*)'
-else ifeq ($(TARGET_LISP), ros run)
-	TEST_CMD = --non-interactive --eval '(ql:quickload :cl-freelock-tests)' --eval '(asdf:test-system :cl-freelock-tests)' --eval '(uiop:quit)'
-	BENCH_CMD = --non-interactive --eval '(ql:quickload :cl-freelock-benchmarks)' --eval '(cl-freelock-benchmarks:run-all-benchmarks $(if $(CSV_LOG),:log-file "$(CSV_LOG)" :append $(APPEND),))' --eval '(uiop:quit)'
-	ASDF_PUSH = --non-interactive --eval '(push (pathname "./") asdf:*central-registry*)'
-endif
-
-R_SCRIPT ?= Rscript
-APPEND ?= nil
-CSV_FILE ?= benchmark_results.csv
-
-.PHONY: deps clean test test-local benchmark benchmark-st benchmark-all install-dev graphs help
-
+.PHONY: help clean-tex clean-scripts clean-lwarp clean-docs clean-all-exclude-docs clean-all-include-docs n-tree lwarpmk limages find-html-deps compile-tex docs auto-run
 .DEFAULT_GOAL := help
 
-target:
-	@echo "TARGET_LISP = $(TARGET_LISP)"
-	@echo ""
-	@echo "Detected binaries at \$$PATH:"
-	@echo "  Clasp:   $(if $(HAS_CLASP),$(HAS_CLASP),Not found)"
-	@echo "  Roswell: $(if $(HAS_ROS),$(HAS_ROS),Not found)"
-	@echo ""
-	@echo "To manually override the target for a specific command, append it like this:"
-	@echo "  make test TARGET_LISP=clasp"
-	@echo "  make test-local TARGET_LISP='ros run'"
-
-target:
-
-deps: 
-	@if [ -z "$(QLOT)" ]; then \
-		echo "[ERROR] qlot not found. Please install it (e.g. roswell, curl, git, et cetera)."; \
-		exit 1; \
-	fi
-	@echo "--> Installing Lisp dependencies with qlot..."
-	@$(QLOT) install
-
-install-dev:
-	@echo "TARGET_LISP = $(TARGET_LISP)"
-	@echo "--> Pushing project to asdf registry..."
-	@$(TARGET_LISP) $(ASDF_PUSH)
-	@echo "--> Installing to local-projects..."
-	@mkdir -p $(LOCAL_PROJECTS_DIR)
-	@if [ -L $(LOCAL_PROJECTS_DIR)/cl-freelock ]; then \
-		echo "Removing existing symlink..."; \
-		rm $(LOCAL_PROJECTS_DIR)/cl-freelock; \
-	fi
-	@ln -sf $(PWD) $(LOCAL_PROJECTS_DIR)/cl-freelock
-	@echo "[OK] Symlinked to $(LOCAL_PROJECTS_DIR)/cl-freelock"
-
-test: deps
-	@echo "TARGET_LISP = $(TARGET_LISP)"
-	@echo "--> Running tests with qlot..."
-	@$(QLOT) exec $(TARGET_LISP) $(TEST_CMD)
-
-
-test-local:
-	@echo "--> Running (SBCL only for now) tests with local Roswell environment (no qlot)..."
-	@$(TARGET_LISP) --non-interactive \
-		--eval '(ql:quickload :cl-freelock-tests)' \
-		--eval '(asdf:test-system :cl-freelock-tests)' \
-		--eval '(uiop:quit)'
-
-
-benchmark: deps
-	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
-	@echo "--> Running benchmark suite (multi-threaded default)..."
-	@if [ -n "$(CSV_LOG)" ]; then echo "Saving results to $(CSV_LOG)"; fi
-	@$(QLOT) exec $(TARGET_LISP) $(BENCH_CMD)
-
-benchmark-st: deps
-	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
-	@echo "--> Running benchmark suite (single-threaded optimized)..."
-	@if [ -n "$(CSV_LOG)" ]; then echo "Saving results to $(CSV_LOG)"; fi
-	@$(QLOT) exec $(TARGET_LISP) --eval '(push :cl-freelock-single-threaded *features*)' $(BENCH_CMD)
-
-benchmark-all: deps
-	@if [ "$(TARGET_LISP)" = "clasp" ]; then echo "Benchmarks are not yet compatible with CLASP."; exit 1; fi
-	@echo "--> Running ALL benchmark suites..."
-	@if [ -z "$(CSV_LOG)" ]; then \
-		echo "[ERROR] Must specify CSV_LOG for benchmark-all. Example: make benchmark-all CSV_LOG=results.csv"; \
-		exit 1; \
-	fi
-	@# Run the first benchmark, creating the file (APPEND defaults to nil)
-	@$(MAKE) benchmark CSV_LOG=$(CSV_LOG)
-	@# Run the second benchmark, explicitly setting APPEND to t for the Lisp function
-	@$(MAKE) benchmark-st CSV_LOG=$(CSV_LOG) APPEND=t
-	@echo "--> All benchmark data saved to $(CSV_LOG)"
-
-graphs:
-	@echo "--> Generating graphs from $(CSV_FILE)..."
-	@if ! [ -f "$(CSV_FILE)" ]; then \
-		echo "[ERROR] $(CSV_FILE) not found."; \
-		echo "Please run 'make benchmark CSV_LOG=$(CSV_FILE)' or 'make benchmark-all CSV_LOG=$(CSV_FILE)' first."; \
-		exit 1; \
-	fi
-	@if command -v Rscript &> /dev/null; then \
-		Rscript analyze_benchmarks.r; \
-	elif command -v R &> /dev/null; then \
-		echo "--> 'Rscript' not found. Using 'R' as a fallback."; \
-		R --vanilla --quiet -e "source('analyze_benchmarks.r')"; \
-	else \
-		echo "[ERROR] Neither 'Rscript' nor 'R' command found."; \
-		echo "Please install R. On Arch Linux, use: sudo pacman -S r"; \
-		exit 1; \
-	fi
-
-clean:
-	@echo "--> Cleaning build artifacts..."
-	@rm -rf .qlot/
-	@rm -rf graphs/
-	@rm -f benchmark_results.csv
-	@find . -name "*.fasl" -type f -delete
-	@echo "Clean complete."
-
 help:
-	@echo "cl-freelock makefile"
-	@echo ""
-	@echo "== Available Commands =="
-	@echo "  make deps                  - Install dependencies using qlot."
-	@echo "  make test                  - Run tests in a reproducible qlot environment."
-	@echo "  make test-local            - Run tests with system Lisp (no qlot)."
-	@echo "  make benchmark             - Run default benchmarks. Add CSV_LOG=file.csv to save results."
-	@echo "  make benchmark-st          - Run single-threaded benchmarks. Add CSV_LOG=file.csv to save."
-	@echo "  make benchmark-all         - Run all benchmarks and save to a file (CSV_LOG is required)."
-	@echo "  make graphs                - Generate plots from a CSV file (e.g., make graphs CSV_FILE=results.csv)."
-	@echo "  make install-dev           - Symlink the project to your local-projects directory and push to ASDF registry."
-	@echo "  make target                - See what implementation the makefile is currently targeting."
-	@echo "  make clean                 - Clean all build artifacts."
-	@echo "  [n.b.] Benchmarks do not support CLASP yet!"
+	@echo "Available commands:"
+	@echo "  make clean-tex                     Remove TeX build artifacts"
+	@echo "  make clean-scripts                 Remove script output artifacts"
+	@echo "  make clean-lwarp                   Remove lwarp artifacts"
+	@echo "  make clean-docs                    Remove docs/ directory"
+	@echo "  make clean-all-exclude-docs        Clean all artifacts except docs/"
+	@echo "  make clean-all-include-docs        Clean all artifacts including docs/"
+	@echo "  make docs FILE=<name>              Build docs/ from <name>.html"
+	@echo "  make lwarpmk FILE=<name>           Run lwarpmk html <name>"
+	@echo "  make limages FILE=<name>           Run lwarpmk limages if <name>-images.txt exists"
+	@echo "  make find-html-deps FILE=<name>    List href/src dependencies from <name>.html"
+	@echo "  make compile-tex FILE=<name>       Compile <name>.tex to PDF"
+	@echo "  make auto-run FILE=<name>          Run full build pipeline"
+
+
+clean-tex: 
+	@echo "Cleaning directory of tex artifacts..."
+	@rm -f *.aux *.bbl *.bcf *.blg *.log *.run.xml *.synctex.gz *.out *.toc
+
+clean-scripts:
+	@echo "Cleaning directory of scripts artifacts..."
+	@rm -f *.txt *.json ~*
+
+clean-lwarp:
+	@echo "Cleaning directory of lwarp artifacts..."
+	@rm -f *.lwarpmkconf *_html.tex *.cut *.css *.ist *.conf *.xdy *_html.pdf *.sidetoc *_html.html
+
+clean-docs:
+	@echo "Cleaning docs/ completely..."
+	@rm -rf docs/
+
+clean-all-exclude-docs:
+	@$(MAKE) clean-tex
+	@$(MAKE) clean-scripts
+	@$(MAKE) clean-lwarp
+	@echo "Cleaned project of all artifacts excluding docs/..."
+
+clean-all-include-docs:
+	@$(MAKE) clean-tex
+	@$(MAKE) clean-scripts
+	@$(MAKE) clean-lwarp
+	@$(MAKE) clean-docs
+	@echo "Cleaned project of all artifacts including docs/..."
+
+docs:
+	@echo "FILE is currently set to: '$(FILE)'"; \
+	if [ -z "$(FILE)" ]; then \
+		echo "Warning: FILE is empty."; \
+		echo "Expected usage: make docs FILE=File-Name-Without-Extension"; \
+		exit 1; \
+	fi; \
+	printf "Proceed? [y/N] "; \
+	read ans; \
+	case "$$ans" in \
+		[yY]|[yY][eE][sS]) ;; \
+		*) echo "Aborted."; exit 1 ;; \
+	esac
+	@echo "Building docs/ directory..."
+	@mkdir -p docs
+	@cp "$(FILE).html" docs/index.html
+	@# 1. Copy manual core support files
+	@cp lwarp.css lwarp_formal.css lwarp_sagebrush.css lwarp_mathjax.txt docs/
+	@# 2. Dynamically discover and copy local assets referenced in the HTML
+	@grep -oE '(href|src)="[^"]+"' "$(FILE).html" | \
+		sed -n 's/.*="\([^/:][^"]*\)".*/\1/p' | \
+		sort -u | \
+		while read -r file; do \
+			if [ -e "$$file" ]; then \
+				cp -r "$$file" docs/; \
+				echo "Copied asset: $$file"; \
+			fi; \
+		done
+	
+lwarpmk:
+	@echo "Running lwarpmk html $(FILE)"
+	@lwarpmk html $(FILE)
+
+limages:
+	@echo "Running lwarpmk limages for $(FILE)..."
+	@if [ -f "$(FILE)-images.txt" ]; then \
+		lwarpmk limages $(FILE); \
+	else \
+		echo "No $(FILE)-images.txt found; skipping limages."; \
+	fi
+
+find-html-deps:
+	@grep -oE '(href|src)="[^"]+"' '$(FILE).html'
+
+compile-tex:
+	@echo "Compiling $(FILE).tex into $(FILE).pdf..."
+	@pdflatex "$(FILE).tex"
+
+auto-run:
+	@test -n "$(FILE)" || (echo "Usage: make auto-run FILE=Racket-Guide-To-Geometry" >&2; exit 1)
+	@$(MAKE) clean-all-include-docs FILE="$(FILE)"
+	@$(MAKE) compile-tex FILE="$(FILE)"
+	@$(MAKE) lwarpmk FILE="$(FILE)"
+	@$(MAKE) limages FILE="$(FILE)"
+	@$(MAKE) docs FILE="$(FILE)"
+	@$(MAKE) clean-all-exclude-docs FILE="$(FILE)"
+	@echo "FILE=$(FILE): completed."
