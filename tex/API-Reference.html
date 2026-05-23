@@ -497,68 +497,350 @@ May 22, 2026
 
 
 <p>
-<a href="API-Reference.html#autosec-17" class="tocsection" >
-<span class="sectionnumber">3</span>&#x2003;Atomic Operations</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-18" class="tocsubsection" >
-<span class="sectionnumber">3.1</span>&#x2003;Types</a>
+<a href="API-Reference.html#autosec-17" class="tocsubsection" >
+<span class="sectionnumber">2.5</span>&#x2003;Atomic Operations</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-19" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.1</span>&#x2003;ATOMIC-REF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-20" class="tocsubsection" >
-<span class="sectionnumber">3.2</span>&#x2003;Functions</a>
+<span class="sectionnumber">2.5.1</span>&#x2003;ATOMIC-REF</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-21" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.1</span>&#x2003;MAKE-ATOMIC-REF</a>
+<span class="sectionnumber">2.5.2</span>&#x2003;MAKE-ATOMIC-REF</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-22" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.2</span>&#x2003;ATOMIC-REF-VALUE</a>
+<span class="sectionnumber">2.5.3</span>&#x2003;ATOMIC-REF-VALUE</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-23" class="tocsubsection" >
-<span class="sectionnumber">3.3</span>&#x2003;Macros</a>
+<span class="sectionnumber">2.6</span>&#x2003;Macros</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-24" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.1</span>&#x2003;CAS</a>
+<span class="sectionnumber">2.6.1</span>&#x2003;CAS</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-25" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.2</span>&#x2003;ATOMIC-INCF</a>
+<span class="sectionnumber">2.6.2</span>&#x2003;ATOMIC-INCF</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-26" class="tocsubsection" >
-<span class="sectionnumber">3.4</span>&#x2003;Utility Functions</a>
+<span class="sectionnumber">2.7</span>&#x2003;Utility Functions</a>
 </p>
 
 
 <p>
 <a href="API-Reference.html#autosec-27" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.1</span>&#x2003;MEMORY-BARRIER</a>
+<span class="sectionnumber">2.7.1</span>&#x2003;MEMORY-BARRIER</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-28" class="tocsubsection" >
+<span class="sectionnumber">2.8</span>&#x2003;Unbounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-30" class="tocsubsubsection" >
+<span class="sectionnumber">2.8.1</span>&#x2003;QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-32" class="tocsubsubsection" >
+<span class="sectionnumber">2.8.2</span>&#x2003;MAKE-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-33" class="tocsubsubsection" >
+<span class="sectionnumber">2.8.3</span>&#x2003;QUEUE-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-34" class="tocsubsubsection" >
+<span class="sectionnumber">2.8.4</span>&#x2003;QUEUE-POP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-35" class="tocsubsubsection" >
+<span class="sectionnumber">2.8.5</span>&#x2003;QUEUE-EMPTY-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-36" class="tocsubsection" >
+<span class="sectionnumber">2.9</span>&#x2003;Bounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-38" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.1</span>&#x2003;BOUNDED-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-40" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.2</span>&#x2003;MAKE-BOUNDED-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.3</span>&#x2003;BOUNDED-QUEUE-CAPACITY</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.4</span>&#x2003;BOUNDED-QUEUE-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.5</span>&#x2003;BOUNDED-QUEUE-POP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.6</span>&#x2003;BOUNDED-QUEUE-EMPTY-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.7</span>&#x2003;BOUNDED-QUEUE-FULL-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.8</span>&#x2003;BOUNDED-QUEUE-PUSH-BATCH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
+<span class="sectionnumber">2.9.9</span>&#x2003;BOUNDED-QUEUE-POP-BATCH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-49" class="tocsubsection" >
+<span class="sectionnumber">2.10</span>&#x2003;SPSC Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
+<span class="sectionnumber">2.10.1</span>&#x2003;SPSC-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
+<span class="sectionnumber">2.10.2</span>&#x2003;MAKE-SPSC-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-54" class="tocsubsubsection" >
+<span class="sectionnumber">2.10.3</span>&#x2003;SPSC-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-55" class="tocsubsubsection" >
+<span class="sectionnumber">2.10.4</span>&#x2003;SPSC-POP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-57" class="tocsubsection" >
+<span class="sectionnumber">3.1</span>&#x2003;General Performance Principles</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-58" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.1</span>&#x2003;Choose the Right Data Structure</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-59" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.2</span>&#x2003;Capacity Selection</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-60" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.3</span>&#x2003;Thread Contention</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-61" class="tocsubsection" >
+<span class="sectionnumber">3.2</span>&#x2003;Optimization Techniques</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-62" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.1</span>&#x2003;Batch Operations</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-63" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.2</span>&#x2003;Avoid Busy Waiting</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-64" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.3</span>&#x2003;Memory Allocation</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-65" class="tocsubsection" >
+<span class="sectionnumber">3.3</span>&#x2003;Implementation-Specific Notes</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-66" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.1</span>&#x2003;SBCL</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-67" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.2</span>&#x2003;CLASP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-68" class="tocsubsection" >
+<span class="sectionnumber">3.4</span>&#x2003;Common Pitfalls</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-69" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.1</span>&#x2003;Wrong capacity</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-70" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.2</span>&#x2003;Thread safety</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-71" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.3</span>&#x2003;Busy waitings</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-72" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.4</span>&#x2003;Memory leaks</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-73" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.5</span>&#x2003;False sharing</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-74" class="tocsubsection" >
+<span class="sectionnumber">3.5</span>&#x2003;Recommended Patterns</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-75" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.1</span>&#x2003;Producer-Consumer Pool</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-76" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.2</span>&#x2003;Basic Producer-Consumer</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-77" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.3</span>&#x2003;Bounded Buffer with Batch Processing</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-78" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.4</span>&#x2003;SPSC Pipeline</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-79" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.5</span>&#x2003;Load Balancing with Multiple Queues</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-80" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.6</span>&#x2003;Web Server Request Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-81" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.7</span>&#x2003;Atomic Counter Service</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-82" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.8</span>&#x2003;Event Processing Pipeline</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-83" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.9</span>&#x2003;Memory Pool with Lock-Free Allocation</a>
 </p>
 </nav>
 <!--
@@ -724,60 +1006,350 @@ Operations return multiple values to indicate success/failure rather than signal
     <div class="figurecaption">
 </div>
 <!--
-...... section Atomic Operations ......
+...... subsection Atomic Operations ......
 -->
-<h4 id="autosec-17"><span class="sectionnumber">3&#x2003;</span>Atomic Operations</h4>
+<h5 id="autosec-17"><span class="sectionnumber">2.5&#x2003;</span>Atomic Operations</h5>
 <a id="API-Reference-autopage-17"></a>
 <!--
-...... subsection Types ......
+...... subsubsection Types ......
 -->
-<h5 id="autosec-18"><span class="sectionnumber">3.1&#x2003;</span>Types</h5>
+<h6 id="autosec-18">Types</h6>
 <a id="API-Reference-autopage-18"></a>
 <!--
 ...... subsubsection ATOMIC-REF ......
 -->
-<h6 id="autosec-19"><span class="sectionnumber">3.1.1&#x2003;</span>ATOMIC-REF</h6>
+<h6 id="autosec-19"><span class="sectionnumber">2.5.1&#x2003;</span>ATOMIC-REF</h6>
 <a id="API-Reference-autopage-19"></a>
 <!--
-...... subsection Functions ......
+...... subsubsection Functions ......
 -->
-<h5 id="autosec-20"><span class="sectionnumber">3.2&#x2003;</span>Functions</h5>
+<h6 id="autosec-20">Functions</h6>
 <a id="API-Reference-autopage-20"></a>
 <!--
 ...... subsubsection MAKE-ATOMIC-REF ......
 -->
-<h6 id="autosec-21"><span class="sectionnumber">3.2.1&#x2003;</span>MAKE-ATOMIC-REF</h6>
+<h6 id="autosec-21"><span class="sectionnumber">2.5.2&#x2003;</span>MAKE-ATOMIC-REF</h6>
 <a id="API-Reference-autopage-21"></a>
 <!--
 ...... subsubsection ATOMIC-REF-VALUE ......
 -->
-<h6 id="autosec-22"><span class="sectionnumber">3.2.2&#x2003;</span>ATOMIC-REF-VALUE</h6>
+<h6 id="autosec-22"><span class="sectionnumber">2.5.3&#x2003;</span>ATOMIC-REF-VALUE</h6>
 <a id="API-Reference-autopage-22"></a>
 <!--
 ...... subsection Macros ......
 -->
-<h5 id="autosec-23"><span class="sectionnumber">3.3&#x2003;</span>Macros</h5>
+<h5 id="autosec-23"><span class="sectionnumber">2.6&#x2003;</span>Macros</h5>
 <a id="API-Reference-autopage-23"></a>
 <!--
 ...... subsubsection CAS ......
 -->
-<h6 id="autosec-24"><span class="sectionnumber">3.3.1&#x2003;</span>CAS</h6>
+<h6 id="autosec-24"><span class="sectionnumber">2.6.1&#x2003;</span>CAS</h6>
 <a id="API-Reference-autopage-24"></a>
 <!--
 ...... subsubsection ATOMIC-INCF ......
 -->
-<h6 id="autosec-25"><span class="sectionnumber">3.3.2&#x2003;</span>ATOMIC-INCF</h6>
+<h6 id="autosec-25"><span class="sectionnumber">2.6.2&#x2003;</span>ATOMIC-INCF</h6>
 <a id="API-Reference-autopage-25"></a>
 <!--
 ...... subsection Utility Functions ......
 -->
-<h5 id="autosec-26"><span class="sectionnumber">3.4&#x2003;</span>Utility Functions</h5>
+<h5 id="autosec-26"><span class="sectionnumber">2.7&#x2003;</span>Utility Functions</h5>
 <a id="API-Reference-autopage-26"></a>
 <!--
 ...... subsubsection MEMORY-BARRIER ......
 -->
-<h6 id="autosec-27"><span class="sectionnumber">3.4.1&#x2003;</span>MEMORY-BARRIER</h6>
+<h6 id="autosec-27"><span class="sectionnumber">2.7.1&#x2003;</span>MEMORY-BARRIER</h6>
 <a id="API-Reference-autopage-27"></a>
+<!--
+...... subsection Unbounded Queue ......
+-->
+<h5 id="autosec-28"><span class="sectionnumber">2.8&#x2003;</span>Unbounded Queue</h5>
+<a id="API-Reference-autopage-28"></a>
+<!--
+...... subsubsection Class ......
+-->
+<h6 id="autosec-29">Class</h6>
+<a id="API-Reference-autopage-29"></a>
+<!--
+...... subsubsection QUEUE ......
+-->
+<h6 id="autosec-30"><span class="sectionnumber">2.8.1&#x2003;</span>QUEUE</h6>
+<a id="API-Reference-autopage-30"></a>
+
+
+<p>
+Lock-free unbounded queue supporting multiple producers and consumers.
+</p>
+<!--
+...... subsubsection Functions ......
+-->
+<h6 id="autosec-31">Functions</h6>
+<a id="API-Reference-autopage-31"></a>
+<!--
+...... subsubsection MAKE-QUEUE ......
+-->
+<h6 id="autosec-32"><span class="sectionnumber">2.8.2&#x2003;</span>MAKE-QUEUE</h6>
+<a id="API-Reference-autopage-32"></a>
+<!--
+...... subsubsection QUEUE-PUSH ......
+-->
+<h6 id="autosec-33"><span class="sectionnumber">2.8.3&#x2003;</span>QUEUE-PUSH</h6>
+<a id="API-Reference-autopage-33"></a>
+<!--
+...... subsubsection QUEUE-POP ......
+-->
+<h6 id="autosec-34"><span class="sectionnumber">2.8.4&#x2003;</span>QUEUE-POP</h6>
+<a id="API-Reference-autopage-34"></a>
+<!--
+...... subsubsection QUEUE-EMPTY-P ......
+-->
+<h6 id="autosec-35"><span class="sectionnumber">2.8.5&#x2003;</span>QUEUE-EMPTY-P</h6>
+<a id="API-Reference-autopage-35"></a>
+<!--
+...... subsection Bounded Queue ......
+-->
+<h5 id="autosec-36"><span class="sectionnumber">2.9&#x2003;</span>Bounded Queue</h5>
+<a id="API-Reference-autopage-36"></a>
+<!--
+...... subsubsection Class ......
+-->
+<h6 id="autosec-37">Class</h6>
+<a id="API-Reference-autopage-37"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE ......
+-->
+<h6 id="autosec-38"><span class="sectionnumber">2.9.1&#x2003;</span>BOUNDED-QUEUE</h6>
+<a id="API-Reference-autopage-38"></a>
+<!--
+...... subsubsection Functions ......
+-->
+<h6 id="autosec-39">Functions</h6>
+<a id="API-Reference-autopage-39"></a>
+<!--
+...... subsubsection MAKE-BOUNDED-QUEUE ......
+-->
+<h6 id="autosec-40"><span class="sectionnumber">2.9.2&#x2003;</span>MAKE-BOUNDED-QUEUE</h6>
+<a id="API-Reference-autopage-40"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-CAPACITY ......
+-->
+<h6 id="autosec-41"><span class="sectionnumber">2.9.3&#x2003;</span>BOUNDED-QUEUE-CAPACITY</h6>
+<a id="API-Reference-autopage-41"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-PUSH ......
+-->
+<h6 id="autosec-42"><span class="sectionnumber">2.9.4&#x2003;</span>BOUNDED-QUEUE-PUSH</h6>
+<a id="API-Reference-autopage-42"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-POP ......
+-->
+<h6 id="autosec-43"><span class="sectionnumber">2.9.5&#x2003;</span>BOUNDED-QUEUE-POP</h6>
+<a id="API-Reference-autopage-43"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-EMPTY-P ......
+-->
+<h6 id="autosec-44"><span class="sectionnumber">2.9.6&#x2003;</span>BOUNDED-QUEUE-EMPTY-P</h6>
+<a id="API-Reference-autopage-44"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-FULL-P ......
+-->
+<h6 id="autosec-45"><span class="sectionnumber">2.9.7&#x2003;</span>BOUNDED-QUEUE-FULL-P</h6>
+<a id="API-Reference-autopage-45"></a>
+<!--
+...... subsubsection Batch Operations ......
+-->
+<h6 id="autosec-46">Batch Operations</h6>
+<a id="API-Reference-autopage-46"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-PUSH-BATCH ......
+-->
+<h6 id="autosec-47"><span class="sectionnumber">2.9.8&#x2003;</span>BOUNDED-QUEUE-PUSH-BATCH</h6>
+<a id="API-Reference-autopage-47"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-POP-BATCH ......
+-->
+<h6 id="autosec-48"><span class="sectionnumber">2.9.9&#x2003;</span>BOUNDED-QUEUE-POP-BATCH</h6>
+<a id="API-Reference-autopage-48"></a>
+<!--
+...... subsection SPSC Queue ......
+-->
+<h5 id="autosec-49"><span class="sectionnumber">2.10&#x2003;</span>SPSC Queue</h5>
+<a id="API-Reference-autopage-49"></a>
+<!--
+...... subsubsection Class ......
+-->
+<h6 id="autosec-50">Class</h6>
+<a id="API-Reference-autopage-50"></a>
+<!--
+...... subsubsection SPSC-QUEUE ......
+-->
+<h6 id="autosec-51"><span class="sectionnumber">2.10.1&#x2003;</span>SPSC-QUEUE</h6>
+<a id="API-Reference-autopage-51"></a>
+<!--
+...... subsubsection Functions ......
+-->
+<h6 id="autosec-52">Functions</h6>
+<a id="API-Reference-autopage-52"></a>
+<!--
+...... subsubsection MAKE-SPSC-QUEUE ......
+-->
+<h6 id="autosec-53"><span class="sectionnumber">2.10.2&#x2003;</span>MAKE-SPSC-QUEUE</h6>
+<a id="API-Reference-autopage-53"></a>
+<!--
+...... subsubsection SPSC-PUSH ......
+-->
+<h6 id="autosec-54"><span class="sectionnumber">2.10.3&#x2003;</span>SPSC-PUSH</h6>
+<a id="API-Reference-autopage-54"></a>
+<!--
+...... subsubsection SPSC-POP ......
+-->
+<h6 id="autosec-55"><span class="sectionnumber">2.10.4&#x2003;</span>SPSC-POP</h6>
+<a id="API-Reference-autopage-55"></a>
+<!--
+...... section Performance Guide ......
+-->
+<h4 id="autosec-56"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
+<a id="API-Reference-autopage-56"></a>
+
+
+<p>
+Tips and guidelines for optimal performance with CL-FREELOCK.
+</p>
+<!--
+...... subsection General Performance Principles ......
+-->
+<h5 id="autosec-57"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
+<a id="API-Reference-autopage-57"></a>
+<!--
+...... subsubsection Choose the Right Data Structure ......
+-->
+<h6 id="autosec-58"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
+<a id="API-Reference-autopage-58"></a>
+<!--
+...... subsubsection Capacity Selection ......
+-->
+<h6 id="autosec-59"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
+<a id="API-Reference-autopage-59"></a>
+<!--
+...... subsubsection Thread Contention ......
+-->
+<h6 id="autosec-60"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
+<a id="API-Reference-autopage-60"></a>
+<!--
+...... subsection Optimization Techniques ......
+-->
+<h5 id="autosec-61"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
+<a id="API-Reference-autopage-61"></a>
+<!--
+...... subsubsection Batch Operations ......
+-->
+<h6 id="autosec-62"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
+<a id="API-Reference-autopage-62"></a>
+<!--
+...... subsubsection Avoid Busy Waiting ......
+-->
+<h6 id="autosec-63"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
+<a id="API-Reference-autopage-63"></a>
+<!--
+...... subsubsection Memory Allocation ......
+-->
+<h6 id="autosec-64"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
+<a id="API-Reference-autopage-64"></a>
+<!--
+...... subsection Implementation-Specific Notes ......
+-->
+<h5 id="autosec-65"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
+<a id="API-Reference-autopage-65"></a>
+<!--
+...... subsubsection SBCL ......
+-->
+<h6 id="autosec-66"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
+<a id="API-Reference-autopage-66"></a>
+<!--
+...... subsubsection CLASP ......
+-->
+<h6 id="autosec-67"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
+<a id="API-Reference-autopage-67"></a>
+<!--
+...... subsection Common Pitfalls ......
+-->
+<h5 id="autosec-68"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
+<a id="API-Reference-autopage-68"></a>
+<!--
+...... subsubsection Wrong capacity ......
+-->
+<h6 id="autosec-69"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
+<a id="API-Reference-autopage-69"></a>
+<!--
+...... subsubsection Thread safety ......
+-->
+<h6 id="autosec-70"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
+<a id="API-Reference-autopage-70"></a>
+<!--
+...... subsubsection Busy waitings ......
+-->
+<h6 id="autosec-71"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
+<a id="API-Reference-autopage-71"></a>
+<!--
+...... subsubsection Memory leaks ......
+-->
+<h6 id="autosec-72"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
+<a id="API-Reference-autopage-72"></a>
+<!--
+...... subsubsection False sharing ......
+-->
+<h6 id="autosec-73"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
+<a id="API-Reference-autopage-73"></a>
+<!--
+...... subsection Recommended Patterns ......
+-->
+<h5 id="autosec-74"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
+<a id="API-Reference-autopage-74"></a>
+<!--
+...... subsubsection Producer-Consumer Pool ......
+-->
+<h6 id="autosec-75"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
+<a id="API-Reference-autopage-75"></a>
+<!--
+...... subsubsection Basic Producer-Consumer ......
+-->
+<h6 id="autosec-76"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
+<a id="API-Reference-autopage-76"></a>
+<!--
+...... subsubsection Bounded Buffer with Batch Processing ......
+-->
+<h6 id="autosec-77"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
+<a id="API-Reference-autopage-77"></a>
+<!--
+...... subsubsection SPSC Pipeline ......
+-->
+<h6 id="autosec-78"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
+<a id="API-Reference-autopage-78"></a>
+<!--
+...... subsubsection Load Balancing with Multiple Queues ......
+-->
+<h6 id="autosec-79"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
+<a id="API-Reference-autopage-79"></a>
+<!--
+...... subsubsection Web Server Request Queue ......
+-->
+<h6 id="autosec-80"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
+<a id="API-Reference-autopage-80"></a>
+<!--
+...... subsubsection Atomic Counter Service ......
+-->
+<h6 id="autosec-81"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
+<a id="API-Reference-autopage-81"></a>
+<!--
+...... subsubsection Event Processing Pipeline ......
+-->
+<h6 id="autosec-82"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
+<a id="API-Reference-autopage-82"></a>
+<!--
+...... subsubsection Memory Pool with Lock-Free Allocation ......
+-->
+<h6 id="autosec-83"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
+<a id="API-Reference-autopage-83"></a>
 
 
 <a id="API-Reference-autofile-last"></a>

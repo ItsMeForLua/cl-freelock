@@ -159,10 +159,10 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (handle-empty-queue)))
 	\end{lstlisting}
 	
-	\section{Atomic Operations}
-	\subsection{Types}
+	\subsection{Atomic Operations}
+	\subsubsection*{Types}
 	\subsubsection{ATOMIC-REF}
-	\subsection{Functions}
+	\subsubsection*{Functions}
 	\subsubsection{MAKE-ATOMIC-REF}
 	\subsubsection{ATOMIC-REF-VALUE}
 	
@@ -172,6 +172,69 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	
 	\subsection{Utility Functions}
 	\subsubsection{MEMORY-BARRIER}
+	
+	\subsection{Unbounded Queue}
+	\subsubsection*{Class}
+	\subsubsection{QUEUE}
+	Lock-free unbounded queue supporting multiple producers and consumers.
+	\subsubsection*{Functions}
+	\subsubsection{MAKE-QUEUE}
+	\subsubsection{QUEUE-PUSH}
+	\subsubsection{QUEUE-POP}
+	\subsubsection{QUEUE-EMPTY-P}
+	
+	\subsection{Bounded Queue}
+	\subsubsection*{Class}
+	\subsubsection{BOUNDED-QUEUE}
+	\subsubsection*{Functions}
+	\subsubsection{MAKE-BOUNDED-QUEUE}
+	\subsubsection{BOUNDED-QUEUE-CAPACITY}
+	\subsubsection{BOUNDED-QUEUE-PUSH}
+	\subsubsection{BOUNDED-QUEUE-POP}
+	\subsubsection{BOUNDED-QUEUE-EMPTY-P}
+	\subsubsection{BOUNDED-QUEUE-FULL-P}
+	\subsubsection*{Batch Operations}
+	\subsubsection{BOUNDED-QUEUE-PUSH-BATCH}
+	\subsubsection{BOUNDED-QUEUE-POP-BATCH}
+	
+	\subsection{SPSC Queue}
+	\subsubsection*{Class}
+	\subsubsection{SPSC-QUEUE}
+	\subsubsection*{Functions}
+	\subsubsection{MAKE-SPSC-QUEUE}
+	\subsubsection{SPSC-PUSH}
+	\subsubsection{SPSC-POP}
+	
+	\section{Performance Guide}
+	Tips and guidelines for optimal performance with CL-FREELOCK.
+	\subsection{General Performance Principles}
+	\subsubsection{Choose the Right Data Structure}
+	\subsubsection{Capacity Selection}
+	\subsubsection{Thread Contention}
+	\subsection{Optimization Techniques}
+	\subsubsection{Batch Operations}
+	\subsubsection{Avoid Busy Waiting}
+	\subsubsection{Memory Allocation}
+	\subsection{Implementation-Specific Notes}
+	\subsubsection{SBCL}
+	\subsubsection{CLASP}
+	\subsection{Common Pitfalls}
+	\subsubsection{Wrong capacity}
+	\subsubsection{Thread safety}
+	\subsubsection{Busy waitings}
+	\subsubsection{Memory leaks}
+	\subsubsection{False sharing}
+	\subsection{Recommended Patterns}
+	\subsubsection{Producer-Consumer Pool}
+	\subsubsection{Basic Producer-Consumer}
+	\subsubsection{Bounded Buffer with Batch Processing}
+	\subsubsection{SPSC Pipeline}
+	\subsubsection{Load Balancing with Multiple Queues}
+	\subsubsection{Web Server Request Queue}
+	\subsubsection{Atomic Counter Service}
+	\subsubsection{Event Processing Pipeline}
+	\subsubsection{Memory Pool with Lock-Free Allocation}
+	
 	
 \end{document}
 	
