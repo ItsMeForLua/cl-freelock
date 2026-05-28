@@ -48,7 +48,13 @@ ImagesName={lateximg-}
 \newcommand{\supcom}{%
 	\textsuperscript{,}
 }
+\newcommand{\multicomment}[1]{}
 \usepackage{listings}
+
+\newcommand{\customitem}[2]{%
+	\noindent\textbf{#1}\\[0.5ex]%
+	#2\vspace{1ex}%
+}
 
 \lstnewenvironment{lispcode}
 {\lstset{
@@ -149,9 +155,9 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 \end{lispcode}
 
 	\subsection{Basic Usage}
-	In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+	In this section, we will go over the basic usage of unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), and error handling.
 	
-	\subsubsection*{FYI}
+	\textbf{Additional Information}
 	\begin{enumerate}
 		\item \texttt{cl-freelock} allows the use of \code{fl} when calling its functions.
 		\subitem  For example: \code{(fl:queue-push *work-queue* i)}
@@ -169,7 +175,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 		\item You have a thread pool architecture with multiple producer threads that are throwing jobs onto the queue, and multiple worker threads are simultaneously pulling jobs off. i.e., An N-to-N architecture.
 		\item If your project requires immunity from deadlocks.
 	\end{enumerate}
-	\subsubsection*{Producers}
+	\textbf{Producers}
 	A producer thread works by calling \code{(queue-push *work-queue* item)}. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
 \begin{lispcode}
 (defun producer ()
@@ -177,15 +183,15 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (fl:queue-push *work-queue* i)
 (sleep 0.001)))
 \end{lispcode}
-	n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state -- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
+	n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state --- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
 	
-	\subsubsection*{Consumers}
+	\textbf{Consumers}
 	A consumer thread works by calling \code{(queue-pop *work-queue*)}. This procedure does not return lisp conditions; instead, \code{queue-pop} returns two specific values:
 	\begin{enumerate}
 		\item The \code{item} itself or \code{NIL} if empty.
 		\item A \code{success} boolean, \code{T} if an item was grabbed, \code{NIL} if the queue was empty.
 	\end{enumerate}
-	n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.\footnote{Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue -- consequently, this tanks a systems performance.}
+	n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.\footnote{Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue --- consequently, this tanks a systems performance.}
 	
 	You must wrap the procedure in a \code{multiple-value-bind} to check if the pop was successful.
 	
@@ -207,7 +213,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (sleep 0.001)))))
 \end{lispcode}
 	
-	\subsection{MPMC Bounded Queue (Vyukov)}
+	\subsubsection{MPMC Bounded Queue (Vyukov)}
 \begin{lispcode}
 (defparameter *buffer* (make-bounded-queue 64))  ; Must be power of 2
 
@@ -221,7 +227,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (format t "Got: ~A~%" value)))
 \end{lispcode}
 	
-	\subsection{SPSC Bounded Queue}
+	\subsubsection{SPSC Bounded Queue}
 \begin{lispcode}
 (defparameter *spsc* (make-spsc-queue 256))  ; Must be power of 2
 ;; Producer thread only
@@ -234,7 +240,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (format t "Got: ~A~%" value)))
 \end{lispcode}
 	
-	\subsection{Error Handling}
+	\subsubsection{Error Handling}
 	Operations return multiple values to indicate success/failure rather than signaling conditions:
 \begin{lispcode}
 ;; Always check the second return value
@@ -246,41 +252,170 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 \end{lispcode}
 	
 	\section{API Reference}
-	\subsection{Atomic Operations}
+	The API Reference for \texttt{cl-freelock} is a dictionary of all global functions, involving unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), error handling, and atomic primitives.\footnote{n.b, The difference between atomic primitives and atomic operations is a matter concerning layers of abstraction---operations are composed of combinations of primitives and non-primitive procedures.}
+	
+	\textbf{Additional Information}
+	
+	\begin{enumerate}
+		\item \texttt{cl-freelock} allows the use of \code{fl} when calling its functions.
+		\subitem  For example: \code{(fl:queue-push *work-queue* i)}
+		\item The API reference for \texttt{cl-freelock} is mostly written with \textit{SBCL} in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite minor.
+	\end{enumerate}
+	% ==========================
+	\multicomment{According to ai: "This is the most important reason. When lwarp sees a description environment, it translates it directly into an HTML Definition List (<dl>, <dt>, <dd>). This is semantically perfect for the web. It means your API reference will automatically look great on mobile phones, and screen readers will perfectly understand the structure. (If you used Option 2 or 3, lwarp would generate an HTML <table>, which is terrible for mobile viewing)."
+	I will need to investigate the HTML to confirm this is true, but for now it seems to make sense, so it wont hurt to atleast try. Additionally, it would stop the need for manual spacing with \\ and \vspace. I already import the enumitem package, so I might aswell extend its use.
+	Update: This method DID NOT work, as lwarp can't handle enumitem's \item in certain contexts. Thus, we will just use standard latex instead.}
+	% ==========================
+	
+	\subsection{Atomic Primitives}
 	\subsubsection{ATOMIC-REF}
+	\customitem{Signature:}{\code{atomic-ref}}
+	
+	\customitem{Description:}{A structure which holds a value that can be atomically updated--it is the foundational atomic pointer for \texttt{cl-freelock}.}
+
 	\subsubsection{MAKE-ATOMIC-REF}
+	
+	\customitem{Signature:}{\code{(make-atomic-ref value)}}
+	
+	\customitem{Description:}{	Constructor for the \code{atomic-ref} structure---creates a new atomic reference that holds the provided \code{value}.}
+	
 	\subsubsection{ATOMIC-REF-VALUE}
+	
+	\customitem{Signature:}{\code{(atomic-ref-value atomic-ref)}}
+	
+	
+	
+	\customitem{Description:}{Accessor for the value held within an \code{atomic-ref}---used internally by Compare and Swap (CAS) operations.\footnote{An accessor (i.e., A structure or slot accessor) is a procedure which admits access to an object's internal state.}\supcom\footnote{n.b., \code{atomic-ref-value} is internally a \code{defstruct}. In \textit{Common Lisp}, the use of \code{defstruct} acts as both a getter and setter by the implementation's compiler. A getter is a procedure which specifically returns a read-only value.}}
 	\subsubsection{CAS}
+	
+	\customitem{Signature:}{\code{(cas place old new)}}
+	
+	\customitem{Description:}{A CAS macro---atomically stored \code{new} in \code{place} if the current value of \code{place} is equal to \code{old}.}
+	
+	\customitem{Returns:}{The old value of \code{place}.}
 	\subsubsection{ATOMIC-INCF}
+	
+	\customitem{Signature:}{\code{(atomic-incf atomic-ref \&optional (delta 1)}}
+	
+	\customitem{Description:}{Atomically increments the value of \code{atomic-ref} by \code{delta}. It is implemented via a CAS loop to facilitate compatibility across different \textit{Lisp} implementations.}
+	
+	\customitem{Returns:}{The new incremented value.}
 	\subsubsection{MEMORY-BARRIER}
 	
-	\subsection{UMPMC Unbounded Queue}
+	\customitem{Signature:}{\code{(memory-barrier)}}
+	
+	\customitem{Description:}{Executes a memory barrier---ensures that all memory operations before the barrier are both completed and globally visible before any subsequent operations are allowed to begin.}
+	\subsection{MPMC Unbounded Queue}
+	
 	\subsubsection{QUEUE}
-	Lock-free unbounded queue supporting multiple producers and consumers.
+	\customitem{Signature:}{\code{queue}}
+	
+	\customitem{Description:}{A lock-free, multi-producer, multi-consumer (MPMC) unbounded queue class based on the MichaelScott algorithm.}
 	\subsubsection{MAKE-QUEUE}
+	\customitem{Signature:}{\code{(make-queue)}}
+	
+	\customitem{Description:}{Creates an unbounded queue instance.}
+	
+	\customitem{Returns:}{A fresh \code{queue} object---initialized with a dummy node.}
+	
+	\customitem{Example:}{}
+\begin{lispcode}
+(defparameter *work-queue* (make-queue))
+\end{lispcode}
 	\subsubsection{QUEUE-PUSH}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{QUEUE-POP}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{QUEUE-EMPTY-P}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	
 	\subsection{MPMC Bounded Queue}
 	\subsubsection{BOUNDED-QUEUE}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{MAKE-BOUNDED-QUEUE}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-CAPACITY}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-PUSH}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-POP}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-EMPTY-P}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-FULL-P}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-PUSH-BATCH}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{BOUNDED-QUEUE-POP-BATCH}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	
 	\subsection{SPSC Bounded Queue}
 	\subsubsection{SPSC-QUEUE}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{MAKE-SPSC-QUEUE}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{SPSC-PUSH}
+	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
 	\subsubsection{SPSC-POP}
 	
+	\customitem{Signature:}{}
+	
+	\customitem{Description:}{}
+	
 	\section{Performance Guide}
-	Tips and guidelines for optimal performance with CL-FREELOCK.
+	Tips and guidelines for optimal performance with \texttt{cl-freelock} --- considerations for the performance of unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), error handling, and atomic operations.
+	
+	\textbf{Additional Information}
+	\begin{enumerate}
+		\item \texttt{cl-freelock} allows the use of \code{fl} when calling its functions.
+		\subitem  For example: \code{(fl:queue-push *work-queue* i)}
+		\item The API reference for cl-freelock is mostly written with SBCL in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite minor.
+	\end{enumerate}
 	\subsection{General Performance Principles}
 	\subsubsection{Choose the Right Data Structure}
 	\subsubsection{Capacity Selection}

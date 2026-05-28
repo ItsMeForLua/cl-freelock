@@ -271,13 +271,13 @@ Home</a>
 
 
 <p>
-<a href="API-Reference.html#autosec-26" class="tocsection" >
+<a href="API-Reference.html#autosec-22" class="tocsection" >
 <span class="sectionnumber">2</span>&#x2003;API Reference</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<a href="Performance-Guide.html#autosec-55" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -537,15 +537,12 @@ Then, load the system in your REPL:
 
 
 <p>
-In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+In this section, we will go over the basic usage of unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), and error handling.
 </p>
-<!--
-...... subsubsection FYI ......
--->
-<h6 id="autosec-11">FYI</h6>
-<a id="Manual-autopage-11"></a>
 
-
+<p>
+<b>Additional Information</b>
+</p>
 <ul class="enumerate" style="list-style-type:none">
 
 <li>
@@ -574,8 +571,8 @@ minor.
 <!--
 ...... subsubsection MPMC Unbounded Queue (Michael-Scott) ......
 -->
-<h6 id="autosec-12"><span class="sectionnumber">1.2.1&#x2003;</span>MPMC Unbounded Queue (Michael-Scott)</h6>
-<a id="Manual-autopage-12"></a>
+<h6 id="autosec-11"><span class="sectionnumber">1.2.1&#x2003;</span>MPMC Unbounded Queue (Michael-Scott)</h6>
+<a id="Manual-autopage-11"></a>
 
 
 <p>
@@ -608,15 +605,9 @@ architecture.
 </p>
 </li>
 </ul>
-<!--
-...... subsubsection Producers ......
--->
-<h6 id="autosec-13">Producers</h6>
-<a id="Manual-autopage-13"></a>
-
 
 <p>
-A producer thread works by calling <span
+<b>Producers</b> A producer thread works by calling <span
      class="colorbox"
      style="background:#ECECEC ; padding:2pt"
 >(queue-push *work-queue* item)</span>. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
@@ -636,37 +627,11 @@ A producer thread works by calling <span
 
 <p>
 n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if
-you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-14"></a><sup>,</sup> <sup>2</sup>
-</p>
-<div role="note" class="footnotes">
-
-<a id="Manual-autopage-15"></a>
-<p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-12"></a><sup>,</sup> <sup>2</sup>
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state – hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
-would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
-</p>
-
-
-</div>
-<!--
-...... subsubsection Consumers ......
--->
-<h6 id="autosec-16">Consumers</h6>
-<a id="Manual-autopage-16"></a>
-
-
-<p>
-A consumer thread works by calling <span
+<b>Consumers</b> A consumer thread works by calling <span
      class="colorbox"
      style="background:#ECECEC ; padding:2pt"
 >(queue-pop *work-queue*)</span>. This procedure does not return lisp conditions; instead, <span
@@ -740,21 +705,36 @@ You must wrap the procedure in a <span
 </div>
 <div role="note" class="footnotes">
 
-<a id="Manual-autopage-18"></a>
+<a id="Manual-autopage-14"></a>
 <p>
 <span
      class="makebox"
      style="display:inline-block ; width:23pt ; text-align:right ; "
->3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue – consequently, this tanks a systems performance.
+>1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+</p>
+
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state — hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
+would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
+</p>
+
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue — consequently, this tanks a systems performance.
 </p>
 
 
 </div>
 <!--
-...... subsection MPMC Bounded Queue (Vyukov) ......
+...... subsubsection MPMC Bounded Queue (Vyukov) ......
 -->
-<h5 id="autosec-19"><span class="sectionnumber">1.3&#x2003;</span>MPMC Bounded Queue (Vyukov)</h5>
-<a id="Manual-autopage-19"></a>
+<h6 id="autosec-15"><span class="sectionnumber">1.2.2&#x2003;</span>MPMC Bounded Queue (Vyukov)</h6>
+<a id="Manual-autopage-15"></a>
 <div class="figurecaption">
 
 </div>
@@ -774,10 +754,10 @@ You must wrap the procedure in a <span
     <div class="figurecaption">
 </div>
 <!--
-...... subsection SPSC Bounded Queue ......
+...... subsubsection SPSC Bounded Queue ......
 -->
-<h5 id="autosec-21"><span class="sectionnumber">1.4&#x2003;</span>SPSC Bounded Queue</h5>
-<a id="Manual-autopage-21"></a>
+<h6 id="autosec-17"><span class="sectionnumber">1.2.3&#x2003;</span>SPSC Bounded Queue</h6>
+<a id="Manual-autopage-17"></a>
 <div class="figurecaption">
 
 </div>
@@ -796,10 +776,10 @@ You must wrap the procedure in a <span
     <div class="figurecaption">
 </div>
 <!--
-...... subsection Error Handling ......
+...... subsubsection Error Handling ......
 -->
-<h5 id="autosec-23"><span class="sectionnumber">1.5&#x2003;</span>Error Handling</h5>
-<a id="Manual-autopage-23"></a>
+<h6 id="autosec-19"><span class="sectionnumber">1.2.4&#x2003;</span>Error Handling</h6>
+<a id="Manual-autopage-19"></a>
 
 
 <p>

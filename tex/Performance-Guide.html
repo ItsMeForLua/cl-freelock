@@ -233,7 +233,7 @@ MathJax = {
 <body>
 
 
-<a id="Manual-autopage-55"></a>
+<a id="Manual-autopage-54"></a>
 <div class="pagegrid">
 
 
@@ -271,13 +271,13 @@ Home</a>
 
 
 <p>
-<a href="API-Reference.html#autosec-26" class="tocsection" >
+<a href="API-Reference.html#autosec-22" class="tocsection" >
 <span class="sectionnumber">2</span>&#x2003;API Reference</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<a href="Performance-Guide.html#autosec-55" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -480,148 +480,178 @@ Home</a>
 <!--
 ...... section Performance Guide ......
 -->
-<h4 id="autosec-56"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
-<a id="Manual-autopage-56"></a>
+<h4 id="autosec-55"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
+<a id="Manual-autopage-55"></a>
 <a id="Manual-autofile-3"></a>
 
 <p>
-Tips and guidelines for optimal performance with CL-FREELOCK.
+Tips and guidelines for optimal performance with <kbd>cl-freelock</kbd> — considerations for the performance of unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single
+Consumer (SPSC), error handling, and atomic operations.
 </p>
+
+<p>
+<b>Additional Information</b>
+</p>
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>fl</span> when calling its functions.
+</p>
+<p>
+<span style="width:20pt; display:inline-block"><!----></span>For example: <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(fl:queue-push *work-queue* i)</span>
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> The API reference for cl-freelock is mostly written with SBCL in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite
+minor.
+</p>
+</li>
+</ul>
 <!--
 ...... subsection General Performance Principles ......
 -->
-<h5 id="autosec-57"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
-<a id="Manual-autopage-57"></a>
+<h5 id="autosec-56"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
+<a id="Manual-autopage-56"></a>
 <!--
 ...... subsubsection Choose the Right Data Structure ......
 -->
-<h6 id="autosec-58"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
-<a id="Manual-autopage-58"></a>
+<h6 id="autosec-57"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
+<a id="Manual-autopage-57"></a>
 <!--
 ...... subsubsection Capacity Selection ......
 -->
-<h6 id="autosec-59"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
-<a id="Manual-autopage-59"></a>
+<h6 id="autosec-58"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
+<a id="Manual-autopage-58"></a>
 <!--
 ...... subsubsection Thread Contention ......
 -->
-<h6 id="autosec-60"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
-<a id="Manual-autopage-60"></a>
+<h6 id="autosec-59"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
+<a id="Manual-autopage-59"></a>
 <!--
 ...... subsection Optimization Techniques ......
 -->
-<h5 id="autosec-61"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
-<a id="Manual-autopage-61"></a>
+<h5 id="autosec-60"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
+<a id="Manual-autopage-60"></a>
 <!--
 ...... subsubsection Batch Operations ......
 -->
-<h6 id="autosec-62"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
-<a id="Manual-autopage-62"></a>
+<h6 id="autosec-61"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
+<a id="Manual-autopage-61"></a>
 <!--
 ...... subsubsection Avoid Busy Waiting ......
 -->
-<h6 id="autosec-63"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
-<a id="Manual-autopage-63"></a>
+<h6 id="autosec-62"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
+<a id="Manual-autopage-62"></a>
 <!--
 ...... subsubsection Memory Allocation ......
 -->
-<h6 id="autosec-64"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
-<a id="Manual-autopage-64"></a>
+<h6 id="autosec-63"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
+<a id="Manual-autopage-63"></a>
 <!--
 ...... subsection Implementation-Specific Notes ......
 -->
-<h5 id="autosec-65"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
-<a id="Manual-autopage-65"></a>
+<h5 id="autosec-64"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
+<a id="Manual-autopage-64"></a>
 <!--
 ...... subsubsection SBCL ......
 -->
-<h6 id="autosec-66"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
-<a id="Manual-autopage-66"></a>
+<h6 id="autosec-65"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
+<a id="Manual-autopage-65"></a>
 <!--
 ...... subsubsection CLASP ......
 -->
-<h6 id="autosec-67"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
-<a id="Manual-autopage-67"></a>
+<h6 id="autosec-66"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
+<a id="Manual-autopage-66"></a>
 <!--
 ...... subsection Common Pitfalls ......
 -->
-<h5 id="autosec-68"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
-<a id="Manual-autopage-68"></a>
+<h5 id="autosec-67"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
+<a id="Manual-autopage-67"></a>
 <!--
 ...... subsubsection Wrong capacity ......
 -->
-<h6 id="autosec-69"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
-<a id="Manual-autopage-69"></a>
+<h6 id="autosec-68"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
+<a id="Manual-autopage-68"></a>
 <!--
 ...... subsubsection Thread safety ......
 -->
-<h6 id="autosec-70"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
-<a id="Manual-autopage-70"></a>
+<h6 id="autosec-69"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
+<a id="Manual-autopage-69"></a>
 <!--
 ...... subsubsection Busy waitings ......
 -->
-<h6 id="autosec-71"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
-<a id="Manual-autopage-71"></a>
+<h6 id="autosec-70"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
+<a id="Manual-autopage-70"></a>
 <!--
 ...... subsubsection Memory leaks ......
 -->
-<h6 id="autosec-72"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
-<a id="Manual-autopage-72"></a>
+<h6 id="autosec-71"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
+<a id="Manual-autopage-71"></a>
 <!--
 ...... subsubsection False sharing ......
 -->
-<h6 id="autosec-73"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
-<a id="Manual-autopage-73"></a>
+<h6 id="autosec-72"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
+<a id="Manual-autopage-72"></a>
 <!--
 ...... subsection Recommended Patterns ......
 -->
-<h5 id="autosec-74"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
-<a id="Manual-autopage-74"></a>
+<h5 id="autosec-73"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
+<a id="Manual-autopage-73"></a>
 <!--
 ...... subsubsection Producer-Consumer Pool ......
 -->
-<h6 id="autosec-75"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
-<a id="Manual-autopage-75"></a>
+<h6 id="autosec-74"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
+<a id="Manual-autopage-74"></a>
 <!--
 ...... subsubsection Basic Producer-Consumer ......
 -->
-<h6 id="autosec-76"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
-<a id="Manual-autopage-76"></a>
+<h6 id="autosec-75"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
+<a id="Manual-autopage-75"></a>
 <!--
 ...... subsubsection Bounded Buffer with Batch Processing ......
 -->
-<h6 id="autosec-77"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
-<a id="Manual-autopage-77"></a>
+<h6 id="autosec-76"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
+<a id="Manual-autopage-76"></a>
 <!--
 ...... subsubsection SPSC Pipeline ......
 -->
-<h6 id="autosec-78"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
-<a id="Manual-autopage-78"></a>
+<h6 id="autosec-77"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
+<a id="Manual-autopage-77"></a>
 <!--
 ...... subsubsection Load Balancing with Multiple Queues ......
 -->
-<h6 id="autosec-79"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
-<a id="Manual-autopage-79"></a>
+<h6 id="autosec-78"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
+<a id="Manual-autopage-78"></a>
 <!--
 ...... subsubsection Web Server Request Queue ......
 -->
-<h6 id="autosec-80"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
-<a id="Manual-autopage-80"></a>
+<h6 id="autosec-79"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
+<a id="Manual-autopage-79"></a>
 <!--
 ...... subsubsection Atomic Counter Service ......
 -->
-<h6 id="autosec-81"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
-<a id="Manual-autopage-81"></a>
+<h6 id="autosec-80"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
+<a id="Manual-autopage-80"></a>
 <!--
 ...... subsubsection Event Processing Pipeline ......
 -->
-<h6 id="autosec-82"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
-<a id="Manual-autopage-82"></a>
+<h6 id="autosec-81"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
+<a id="Manual-autopage-81"></a>
 <!--
 ...... subsubsection Memory Pool with Lock-Free Allocation ......
 -->
-<h6 id="autosec-83"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
-<a id="Manual-autopage-83"></a>
+<h6 id="autosec-82"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
+<a id="Manual-autopage-82"></a>
 
 
 <a id="Manual-autofile-last"></a>
