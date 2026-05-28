@@ -27,9 +27,6 @@ ImagesName={lateximg-}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usepackage{float}
-\usepackage{tikz-3dplot}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
 \usetikzlibrary{calc, positioning}
 \usetikzlibrary{decorations.pathreplacing}
 \usepackage[font=small]{caption}
@@ -38,11 +35,19 @@ ImagesName={lateximg-}
 
 \usepackage[notes,backend=biber]{biblatex-chicago} 
 \addbibresource{references.bib}
-
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
 \widowpenalty=10000
 \clubpenalty=10000
+\DeclareRobustCommand{\code}[1]{%
+	\begingroup
+	\setlength{\fboxsep}{2pt}%
+	\colorbox{gray!15}{\ttfamily\small #1}%
+	\endgroup
+}
+\newcommand{\supcom}{%
+	\textsuperscript{,}
+}
 \usepackage{listings}
 
 \lstnewenvironment{lispcode}
@@ -104,7 +109,7 @@ ImagesName={lateximg-}
 		rulecolor=\color{black}
 }}
 {}
-\title{cl-freelock api reference}
+\title{cl-freelock API Reference}
 \author{Andrew D. France}
 \date{\today}
 
@@ -136,6 +141,36 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	
 	
 	\subsection{Producer-Consumer with Unbounded Queue}
+	The algorithm used for unbounded queues is based off of the Michael-Scott algorithm. We specifically use Compare-And-Swap (CAS) operations to link nodes and swing the head and tail pointers.
+	
+	We identify three main reasons one would use this particular queue type:
+	\begin{enumerate}
+		\item When the workload is highly variable in predictability, such that you cannot guarantee a maximum capacity for your queue ahead of time.
+		\item You have a thread pool architecture with multiple producer threads that are throwing jobs onto the queue, and multiple worker threads are simultaneously pulling jobs off. i.e., An N-to-N architecture.
+		\item If your project requires immunity from deadlocks.
+	\end{enumerate}
+	\subsubsection*{Producers}
+	A producer thread works by calling \code{(queue-push *work-queue* item)}. Because the producer thread is lock-free, the procedure will never block a thread.
+	
+	An example of defining a producer:
+\begin{lispcode}
+(defun producer ()
+(loop for i from 1 to 1000 do
+(queue-push *work-queue* i)
+(sleep 0.001)))
+\end{lispcode}
+	n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state -- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
+	
+	\subsubsection*{Consumers}
+	A consumer thread works by calling \code{(queue-pop *work-queue*)}. This procedure does not return lisp conditions; instead, \code{queue-pop} returns two specific values:
+	\begin{enumerate}
+		\item The \code{item} itself or \code{NIL} if empty.
+		\item A \code{success} boolean, \code{T} if an item was grabbed, \code{NIL} if the queue was empty.
+	\end{enumerate}
+	n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.\footnote{Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue -- consequently, this tanks a systems performance.}
+	
+	You must wrap the procedure in a \code{multiple-value-bind} to check if the pop was successful.
+	
 \begin{lispcode}
 (defparameter *work-queue* (make-queue))
 ;; Producer thread
