@@ -29,7 +29,7 @@ clean-scripts:
 clean-lwarp:
 	@echo "Cleaning directory of lwarp artifacts..."
 	@rm -f *.lwarpmkconf *_html.tex *.cut *.css *.ist *.conf *.xdy *_html.pdf *.sidetoc *_html.html
-	@rm -f tex/*.lwarpmkconf tex/*_html.tex tex/*.cut tex/*.css tex/*.ist tex/*.conf tex/*.xdy tex/*_html.pdf tex/*.sidetoc tex/*_html.html
+	@rm -f tex/*.lwarpmkconf tex/*_html.tex tex/*.cut tex/*.listing tex/.log tex/*.css tex/*.ist tex/*.conf tex/*.xdy tex/*_html.pdf tex/*.sidetoc tex/*_html.html
 
 clean-docs:
 	@echo "Cleaning docs/ completely..."
@@ -78,9 +78,33 @@ docs:
 			fi; \
 		done
 
+# I can't figure out how lwarp handles colored text, so I'm just gonna inject the lwarp.css file post compile for now.
+# Disclaimer: I used AI to help speed up the creation of this updated target. I did not feel like writing all that. Front end is not my thing.
+# I'm also curious how emacs eww would render our html.
 lwarpmk:
 	@echo "Running lwarpmk html $(FILE)"
 	@cd tex && lwarpmk html "$(FILE)"
+	@echo "Injecting custom structural CSS into lwarp.css..."
+	@echo "/* --- CUSTOM CODE BLOCK STRUCTURE --- */" >> tex/lwarp.css
+	@echo "pre.programlisting { background-color: #f0f0f0; border: 1.5pt solid black; padding: 10px; margin-bottom: 1.5em; overflow-x: auto; white-space: pre-wrap; font-family: monospace; }" >> tex/lwarp.css
+	@echo "Injecting Highlight.js..."
+	@echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">' >> "tex/$(FILE).html"
+	@echo '<style>.hljs { background: transparent !important; padding: 0 !important; }</style>' >> "tex/$(FILE).html"
+	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>' >> "tex/$(FILE).html"
+	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>' >> "tex/$(FILE).html"
+	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>' >> "tex/$(FILE).html"
+	@echo '<script>' >> "tex/$(FILE).html"
+	@echo 'document.querySelectorAll("pre.programlisting").forEach(el => {' >> "tex/$(FILE).html"
+	@echo '  const rawText = el.textContent;' >> "tex/$(FILE).html"
+	@echo '  const code = document.createElement("code");' >> "tex/$(FILE).html"
+	@echo '  // Default to Lisp, only use Bash for actual terminal commands' >> "tex/$(FILE).html"
+	@echo '  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";' >> "tex/$(FILE).html"
+	@echo '  code.textContent = rawText;' >> "tex/$(FILE).html"
+	@echo '  el.innerHTML = "";' >> "tex/$(FILE).html"
+	@echo '  el.appendChild(code);' >> "tex/$(FILE).html"
+	@echo '  hljs.highlightElement(code);' >> "tex/$(FILE).html"
+	@echo '});' >> "tex/$(FILE).html"
+	@echo '</script>' >> "tex/$(FILE).html"
 
 limages:
 	@echo "Running lwarpmk limages for $(FILE)..."

@@ -445,7 +445,7 @@ Andrew D. France
 <div class="titledate">
 
 <p>
-May 22, 2026
+May 27, 2026
 </p>
 </div>
 
@@ -858,7 +858,6 @@ Once available on quicklisp, you will be able to simply run:
 </div>
 <pre class="programlisting">
 (ql:quickload :cl-freelock)
-
 </pre>
 
     <div class="figurecaption">
@@ -873,7 +872,6 @@ For now, clone the repository into your Quicklisp local-projects directory:
 <pre class="programlisting">
 cd ~/quicklisp/local-projects/
 git clone https://github.com/ItsMeForLua/cl-freelock.git
-
 </pre>
 
     <div class="figurecaption">
@@ -887,7 +885,6 @@ Then, load the system in your REPL:
 </div>
 <pre class="programlisting">
 (ql:quickload :cl-freelock)
-
 </pre>
 
     <div class="figurecaption">
@@ -926,7 +923,6 @@ In this section, we will go over the basic usage of producer-consumer with unbou
 (if found
 (format t "Processing: ~A~&percnt;" item)
 (sleep 0.001)))))
-
 </pre>
 
     <div class="figurecaption">
@@ -950,7 +946,6 @@ In this section, we will go over the basic usage of producer-consumer with unbou
 (bounded-queue-pop *buffer*)
 (when success
 (format t "Got: ~A~&percnt;" value)))
-
 </pre>
 
     <div class="figurecaption">
@@ -965,17 +960,14 @@ In this section, we will go over the basic usage of producer-consumer with unbou
 </div>
 <pre class="programlisting">
 (defparameter *spsc* (make-spsc-queue 256))   ; Must be power of 2
-
 ;; Producer thread only
 (when (spsc-push *spsc* "fast-data")
 (format t "Pushed successfully~&percnt;"))
-
 ;; Consumer thread only
 (multiple-value-bind (value success)
 (spsc-pop *spsc*)
 (when success
 (format t "Got: ~A~&percnt;" value)))
-
 </pre>
 
     <div class="figurecaption">
@@ -1000,7 +992,6 @@ Operations return multiple values to indicate success/failure rather than signal
 (if success
 (process value)
 (handle-empty-queue)))
-
 </pre>
 
     <div class="figurecaption">
@@ -1360,3 +1351,20 @@ Tips and guidelines for optimal performance with CL-FREELOCK.
 </div><!-- grid -->
 </body>
 </html>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.querySelectorAll("pre.programlisting").forEach(el => {
+  const rawText = el.textContent;
+  const code = document.createElement("code");
+  // Default to Lisp, only use Bash for actual terminal commands
+  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+  code.textContent = rawText;
+  el.innerHTML = "";
+  el.appendChild(code);
+  hljs.highlightElement(code);
+});
+</script>

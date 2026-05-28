@@ -1869,3 +1869,5 @@ span.sidetocthetitle { display: none }
     nav.botnavigation { display:block }
     main.bodycontainer { width: 100% }
 }
+/* --- CUSTOM CODE BLOCK STRUCTURE --- */
+pre.programlisting { background-color: #f0f0f0; border: 1.5pt solid black; padding: 10px; margin-bottom: 1.5em; overflow-x: auto; white-space: pre-wrap; font-family: monospace; }

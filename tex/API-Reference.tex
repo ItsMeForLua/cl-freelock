@@ -24,7 +24,6 @@ ImagesName={lateximg-}
 
 \usepackage{amsmath, amssymb, graphicx}
 \usepackage{textcomp}
-\usepackage{listings}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usepackage{float}
@@ -42,33 +41,69 @@ ImagesName={lateximg-}
 
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
-\DeclareRobustCommand{\code}[1]{%
-	\begingroup
-	\setlength{\fboxsep}{2pt}%
-	\colorbox{gray!15}{\ttfamily\small #1}%
-	\endgroup
-}
 \widowpenalty=10000
 \clubpenalty=10000
-\lstset{
-	language=Lisp,
-	basicstyle=\ttfamily\small\linespread{1}\selectfont\raggedright,
-	morekeywords={define, struct, hash, lambda, for/fold, hash-update},
-	columns=fullflexible,
-	keepspaces=true,
-	upquote=true,
-	keywordstyle=\color{blue}\bfseries,
-	commentstyle=\color{green!60!black}\itshape,
-	stringstyle=\color{red},
-	breaklines=true,
-	frame=single,
-	backgroundcolor=\color{gray!10},
-	showstringspaces=false,
-	aboveskip=1.5em,
-	belowskip=1.5em,
-	xleftmargin=0pt
-}
+\usepackage{listings}
 
+\lstnewenvironment{lispcode}
+{\lstset{
+		language=Lisp,
+		alsoletter={-,:},
+		morekeywords={
+			defparameter, defun, loop, for, from, to, do,
+			multiple-value-bind, if, when, format, sleep, ql:quickload,
+			make-atomic-ref, atomic-ref-value, cas, atomic-incf, memory-barrier,
+			make-queue, queue-push, queue-pop, queue-empty-p,
+			make-bounded-queue, bounded-queue-capacity, bounded-queue-push, 
+			bounded-queue-pop, bounded-queue-empty-p, bounded-queue-full-p, 
+			bounded-queue-push-batch, bounded-queue-pop-batch,
+			make-spsc-queue, spsc-push, spsc-pop
+		},
+		basicstyle=\ttfamily\small\linespread{1}\selectfont\raggedright,
+		columns=fullflexible,
+		keepspaces=true,
+		upquote=true,
+		keywordstyle=\color{blue}\bfseries,
+		commentstyle=\color{green!60!black}\itshape,
+		stringstyle=\color{red},
+		breaklines=true,
+		showstringspaces=false,
+		aboveskip=1.5em,
+		belowskip=1.5em,
+		xleftmargin=0pt,
+		backgroundcolor=\color{gray!10},
+		frame=single,
+		framerule=1.5pt,
+		rulecolor=\color{black}
+}}
+{}
+
+\lstnewenvironment{bashcode}
+{\lstset{
+		language=bash,
+		alsoletter={-},
+		morekeywords={
+			sudo, git, apt, apt-get, pacman, echo, cd, ls, mkdir, 
+			rm, mv, cp, export, source, make, cmake, ql
+		},
+		basicstyle=\ttfamily\small\linespread{1}\selectfont\raggedright,
+		columns=fullflexible,
+		keepspaces=true,
+		upquote=true,
+		keywordstyle=\color{blue}\bfseries,
+		commentstyle=\color{green!60!black}\itshape,
+		stringstyle=\color{red},
+		breaklines=true,
+		showstringspaces=false,
+		aboveskip=1.5em,
+		belowskip=1.5em,
+		xleftmargin=0pt,
+		backgroundcolor=\color{gray!10},
+		frame=single,
+		framerule=1.5pt,
+		rulecolor=\color{black}
+}}
+{}
 \title{cl-freelock api reference}
 \author{Andrew D. France}
 \date{\today}
@@ -83,25 +118,25 @@ ImagesName={lateximg-}
 	
 	\section{Getting Started: Installation}
 	Once available on quicklisp, you will be able to simply run:
-	\begin{lstlisting}
+\begin{lispcode}
 (ql:quickload :cl-freelock)
-	\end{lstlisting}
+\end{lispcode}
 	For now, clone the repository into your Quicklisp local-projects directory:
-	\begin{lstlisting}
+\begin{bashcode}
 cd ~/quicklisp/local-projects/
 git clone https://github.com/ItsMeForLua/cl-freelock.git
-	\end{lstlisting}
+\end{bashcode}
 	Then, load the system in your REPL:
-	\begin{lstlisting}
+\begin{lispcode}
 (ql:quickload :cl-freelock)
-	\end{lstlisting}
+\end{lispcode}
 
 	\section{Basic Usage}
 	In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
 	
 	
 	\subsection{Producer-Consumer with Unbounded Queue}
-	\begin{lstlisting}
+\begin{lispcode}
 (defparameter *work-queue* (make-queue))
 ;; Producer thread
 (defun producer ()
@@ -117,10 +152,10 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (if found
 (format t "Processing: ~A~%" item)
 (sleep 0.001)))))
-	\end{lstlisting}
+\end{lispcode}
 	
 	\subsection{Bounded Buffer}
-	\begin{lstlisting}
+\begin{lispcode}
 (defparameter *buffer* (make-bounded-queue 64))  ; Must be power of 2
 
 ;; Non-blocking operations
@@ -131,33 +166,31 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (bounded-queue-pop *buffer*)
 (when success
 (format t "Got: ~A~%" value)))
-	\end{lstlisting}
+\end{lispcode}
 	
 	\subsection{SPSC}
-	\begin{lstlisting}
+\begin{lispcode}
 (defparameter *spsc* (make-spsc-queue 256))  ; Must be power of 2
-
 ;; Producer thread only
 (when (spsc-push *spsc* "fast-data")
 (format t "Pushed successfully~%"))
-
 ;; Consumer thread only  
 (multiple-value-bind (value success)
 (spsc-pop *spsc*)
 (when success
 (format t "Got: ~A~%" value)))
-	\end{lstlisting}
+\end{lispcode}
 	
 	\subsection{Error Handling}
 	Operations return multiple values to indicate success/failure rather than signaling conditions:
-	\begin{lstlisting}
+\begin{lispcode}
 ;; Always check the second return value
 (multiple-value-bind (value success)
 (queue-pop *queue*)
 (if success
 (process value)
 (handle-empty-queue)))
-	\end{lstlisting}
+\end{lispcode}
 	
 	\subsection{Atomic Operations}
 	\subsubsection*{Types}
