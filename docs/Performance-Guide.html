@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual</title>
+<title>cl-freelock Manual - Performance Guide</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -232,7 +233,60 @@ MathJax = {
 <body>
 
 
-<div class="homepagegrid">
+<a id="Manual-autopage-55"></a>
+<div class="pagegrid">
+
+
+<nav class="topnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+<div class="sidetoccontainer">
+
+
+<nav class="sidetoc">
+
+
+<div class="sidetoctitle">
+
+<p>
+<span class="sidetocthetitle">cl-freelock Manual</span>
+</p>
+
+<p>
+Contents
+</p>
+</div>
+
+
+<div class="sidetoccontents">
+
+<p>
+<a href="Manual.html" class="linkhome" >
+Home</a>
+</p>
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+</div>
+
+</nav>
+
+</div>
 
 
 <main class="bodycontainer">
@@ -240,7 +294,7 @@ MathJax = {
 
 <section class="textbody">
 
-<a id="Manual-autofile-0"></a>
+<h1>cl-freelock Manual</h1>
 
 <!--MathJax customizations:-->
 <div data-nosnippet
@@ -423,430 +477,161 @@ MathJax = {
 
 </div>
 
-<a id="Manual-autopage-1"></a>
-<div class="titlepage">
-
-<h1>cl-freelock Manual</h1>
-
-
-<div class="author">
-
-
-<div class="oneauthor">
-
-<p>
-Andrew D. France
-</p>
-</div>
-
-</div>
-
-
-<div class="titledate">
-
-<p>
-Last edited: 2026-05-28T01:05:55-05:00 UTC
-</p>
-</div>
-
-</div>
 <!--
-...... section Contents ......
+...... section Performance Guide ......
 -->
-<h4 id="autosec-3">Contents</h4>
-<a id="Manual-autopage-3"></a>
-
-
-
-<nav class="toc">
-
-<p>
-<a href="Tutorial.html#autosec-5" class="tocsection" >
-<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-6" class="tocsubsection" >
-<span class="sectionnumber">1.1</span>&#x2003;Getting Started: Installation</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-10" class="tocsubsection" >
-<span class="sectionnumber">1.2</span>&#x2003;Basic Usage</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-12" class="tocsubsubsection" >
-<span class="sectionnumber">1.2.1</span>&#x2003;MPMC Unbounded Queue (Michael-Scott)</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-19" class="tocsubsection" >
-<span class="sectionnumber">1.3</span>&#x2003;MPMC Bounded Queue (Vyukov)</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-21" class="tocsubsection" >
-<span class="sectionnumber">1.4</span>&#x2003;SPSC Bounded Queue</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-23" class="tocsubsection" >
-<span class="sectionnumber">1.5</span>&#x2003;Error Handling</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-26" class="tocsection" >
-<span class="sectionnumber">2</span>&#x2003;API Reference</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-27" class="tocsubsection" >
-<span class="sectionnumber">2.1</span>&#x2003;Atomic Operations</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-28" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.1</span>&#x2003;ATOMIC-REF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-29" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.2</span>&#x2003;MAKE-ATOMIC-REF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-30" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.3</span>&#x2003;ATOMIC-REF-VALUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-31" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.4</span>&#x2003;CAS</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-32" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.5</span>&#x2003;ATOMIC-INCF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-33" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.6</span>&#x2003;MEMORY-BARRIER</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-34" class="tocsubsection" >
-<span class="sectionnumber">2.2</span>&#x2003;UMPMC Unbounded Queue</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-35" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.1</span>&#x2003;QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-36" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.2</span>&#x2003;MAKE-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-37" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.3</span>&#x2003;QUEUE-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-38" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.4</span>&#x2003;QUEUE-POP</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-39" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.5</span>&#x2003;QUEUE-EMPTY-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-40" class="tocsubsection" >
-<span class="sectionnumber">2.3</span>&#x2003;MPMC Bounded Queue</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.1</span>&#x2003;BOUNDED-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.2</span>&#x2003;MAKE-BOUNDED-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.3</span>&#x2003;BOUNDED-QUEUE-CAPACITY</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.4</span>&#x2003;BOUNDED-QUEUE-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.5</span>&#x2003;BOUNDED-QUEUE-POP</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-46" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.6</span>&#x2003;BOUNDED-QUEUE-EMPTY-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.7</span>&#x2003;BOUNDED-QUEUE-FULL-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.8</span>&#x2003;BOUNDED-QUEUE-PUSH-BATCH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-49" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.9</span>&#x2003;BOUNDED-QUEUE-POP-BATCH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-50" class="tocsubsection" >
-<span class="sectionnumber">2.4</span>&#x2003;SPSC Bounded Queue</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.1</span>&#x2003;SPSC-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-52" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.2</span>&#x2003;MAKE-SPSC-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.3</span>&#x2003;SPSC-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-54" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.4</span>&#x2003;SPSC-POP</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-56" class="tocsection" >
-<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-57" class="tocsubsection" >
-<span class="sectionnumber">3.1</span>&#x2003;General Performance Principles</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-58" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.1</span>&#x2003;Choose the Right Data Structure</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-59" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.2</span>&#x2003;Capacity Selection</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-60" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.3</span>&#x2003;Thread Contention</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-61" class="tocsubsection" >
-<span class="sectionnumber">3.2</span>&#x2003;Optimization Techniques</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-62" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.1</span>&#x2003;Batch Operations</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-63" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.2</span>&#x2003;Avoid Busy Waiting</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-64" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.3</span>&#x2003;Memory Allocation</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-65" class="tocsubsection" >
-<span class="sectionnumber">3.3</span>&#x2003;Implementation-Specific Notes</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-66" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.1</span>&#x2003;SBCL</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-67" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.2</span>&#x2003;CLASP</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-68" class="tocsubsection" >
-<span class="sectionnumber">3.4</span>&#x2003;Common Pitfalls</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-69" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.1</span>&#x2003;Wrong capacity</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-70" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.2</span>&#x2003;Thread safety</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-71" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.3</span>&#x2003;Busy waitings</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-72" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.4</span>&#x2003;Memory leaks</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-73" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.5</span>&#x2003;False sharing</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-74" class="tocsubsection" >
-<span class="sectionnumber">3.5</span>&#x2003;Recommended Patterns</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-75" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.1</span>&#x2003;Producer-Consumer Pool</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-76" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.2</span>&#x2003;Basic Producer-Consumer</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-77" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.3</span>&#x2003;Bounded Buffer with Batch Processing</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-78" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.4</span>&#x2003;SPSC Pipeline</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-79" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.5</span>&#x2003;Load Balancing with Multiple Queues</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-80" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.6</span>&#x2003;Web Server Request Queue</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-81" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.7</span>&#x2003;Atomic Counter Service</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-82" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.8</span>&#x2003;Event Processing Pipeline</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-83" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.9</span>&#x2003;Memory Pool with Lock-Free Allocation</a>
-</p>
-</nav>
-
+<h4 id="autosec-56"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
+<a id="Manual-autopage-56"></a>
+<a id="Manual-autofile-3"></a>
+
+<p>
+Tips and guidelines for optimal performance with CL-FREELOCK.
+</p>
+<!--
+...... subsection General Performance Principles ......
+-->
+<h5 id="autosec-57"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
+<a id="Manual-autopage-57"></a>
+<!--
+...... subsubsection Choose the Right Data Structure ......
+-->
+<h6 id="autosec-58"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
+<a id="Manual-autopage-58"></a>
+<!--
+...... subsubsection Capacity Selection ......
+-->
+<h6 id="autosec-59"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
+<a id="Manual-autopage-59"></a>
+<!--
+...... subsubsection Thread Contention ......
+-->
+<h6 id="autosec-60"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
+<a id="Manual-autopage-60"></a>
+<!--
+...... subsection Optimization Techniques ......
+-->
+<h5 id="autosec-61"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
+<a id="Manual-autopage-61"></a>
+<!--
+...... subsubsection Batch Operations ......
+-->
+<h6 id="autosec-62"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
+<a id="Manual-autopage-62"></a>
+<!--
+...... subsubsection Avoid Busy Waiting ......
+-->
+<h6 id="autosec-63"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
+<a id="Manual-autopage-63"></a>
+<!--
+...... subsubsection Memory Allocation ......
+-->
+<h6 id="autosec-64"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
+<a id="Manual-autopage-64"></a>
+<!--
+...... subsection Implementation-Specific Notes ......
+-->
+<h5 id="autosec-65"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
+<a id="Manual-autopage-65"></a>
+<!--
+...... subsubsection SBCL ......
+-->
+<h6 id="autosec-66"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
+<a id="Manual-autopage-66"></a>
+<!--
+...... subsubsection CLASP ......
+-->
+<h6 id="autosec-67"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
+<a id="Manual-autopage-67"></a>
+<!--
+...... subsection Common Pitfalls ......
+-->
+<h5 id="autosec-68"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
+<a id="Manual-autopage-68"></a>
+<!--
+...... subsubsection Wrong capacity ......
+-->
+<h6 id="autosec-69"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
+<a id="Manual-autopage-69"></a>
+<!--
+...... subsubsection Thread safety ......
+-->
+<h6 id="autosec-70"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
+<a id="Manual-autopage-70"></a>
+<!--
+...... subsubsection Busy waitings ......
+-->
+<h6 id="autosec-71"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
+<a id="Manual-autopage-71"></a>
+<!--
+...... subsubsection Memory leaks ......
+-->
+<h6 id="autosec-72"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
+<a id="Manual-autopage-72"></a>
+<!--
+...... subsubsection False sharing ......
+-->
+<h6 id="autosec-73"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
+<a id="Manual-autopage-73"></a>
+<!--
+...... subsection Recommended Patterns ......
+-->
+<h5 id="autosec-74"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
+<a id="Manual-autopage-74"></a>
+<!--
+...... subsubsection Producer-Consumer Pool ......
+-->
+<h6 id="autosec-75"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
+<a id="Manual-autopage-75"></a>
+<!--
+...... subsubsection Basic Producer-Consumer ......
+-->
+<h6 id="autosec-76"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
+<a id="Manual-autopage-76"></a>
+<!--
+...... subsubsection Bounded Buffer with Batch Processing ......
+-->
+<h6 id="autosec-77"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
+<a id="Manual-autopage-77"></a>
+<!--
+...... subsubsection SPSC Pipeline ......
+-->
+<h6 id="autosec-78"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
+<a id="Manual-autopage-78"></a>
+<!--
+...... subsubsection Load Balancing with Multiple Queues ......
+-->
+<h6 id="autosec-79"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
+<a id="Manual-autopage-79"></a>
+<!--
+...... subsubsection Web Server Request Queue ......
+-->
+<h6 id="autosec-80"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
+<a id="Manual-autopage-80"></a>
+<!--
+...... subsubsection Atomic Counter Service ......
+-->
+<h6 id="autosec-81"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
+<a id="Manual-autopage-81"></a>
+<!--
+...... subsubsection Event Processing Pipeline ......
+-->
+<h6 id="autosec-82"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
+<a id="Manual-autopage-82"></a>
+<!--
+...... subsubsection Memory Pool with Lock-Free Allocation ......
+-->
+<h6 id="autosec-83"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
+<a id="Manual-autopage-83"></a>
+
+
+<a id="Manual-autofile-last"></a>
 </section>
 
 </main>
+
+
+<nav class="botnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
 
 </div><!-- grid -->
 </body>

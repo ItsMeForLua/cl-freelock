@@ -109,9 +109,21 @@ ImagesName={lateximg-}
 		rulecolor=\color{black}
 }}
 {}
-\title{cl-freelock API Reference}
+% n.b, I had to run sudo pacman -S texlive-plaingeneric ...
+% extra/texlive-plaingeneric 2026.1-1 (texlive)
+% usr/share/texmf-dist/tex/latex/tracklang/tracklang.sty
+% datetime2 requires tracklang.sty ...
+% Verify it can be found with kpsewhich tracklang.sty
+\usepackage[style=iso]{datetime2}
+
+\newcommand{\lastedited}{%
+	Last edited: \DTMnow\ UTC%
+}
+\date{\lastedited}
+\setcounter{FileDepth}{1}
+\title{cl-freelock Manual}
 \author{Andrew D. France}
-\date{\today}
+\date{\lastedited}
 
 \begin{document}
 	
@@ -120,8 +132,8 @@ ImagesName={lateximg-}
 	
 	\tableofcontents
 	\newpage
-	
-	\section{Getting Started: Installation}
+	\section{Tutorial}
+	\subsection{Getting Started: Installation}
 	Once available on quicklisp, you will be able to simply run:
 \begin{lispcode}
 (ql:quickload :cl-freelock)
@@ -136,11 +148,19 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (ql:quickload :cl-freelock)
 \end{lispcode}
 
-	\section{Basic Usage}
+	\subsection{Basic Usage}
 	In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
 	
+	\subsubsection*{FYI}
+	\begin{enumerate}
+		\item \texttt{cl-freelock} allows the use of \code{fl} when calling its functions.
+		\subitem  For example: \code{(fl:queue-push *work-queue* i)}
+		\item The API reference for cl-freelock is mostly written with SBCL in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite minor.
+	\end{enumerate}
 	
-	\subsection{Producer-Consumer with Unbounded Queue}
+	
+	
+	\subsubsection{MPMC Unbounded Queue (Michael-Scott)}
 	The algorithm used for unbounded queues is based off of the Michael-Scott algorithm. We specifically use Compare-And-Swap (CAS) operations to link nodes and swing the head and tail pointers.
 	
 	We identify three main reasons one would use this particular queue type:
@@ -150,13 +170,11 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 		\item If your project requires immunity from deadlocks.
 	\end{enumerate}
 	\subsubsection*{Producers}
-	A producer thread works by calling \code{(queue-push *work-queue* item)}. Because the producer thread is lock-free, the procedure will never block a thread.
-	
-	An example of defining a producer:
+	A producer thread works by calling \code{(queue-push *work-queue* item)}. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
 \begin{lispcode}
 (defun producer ()
 (loop for i from 1 to 1000 do
-(queue-push *work-queue* i)
+(fl:queue-push *work-queue* i)
 (sleep 0.001)))
 \end{lispcode}
 	n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state -- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
@@ -189,7 +207,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (sleep 0.001)))))
 \end{lispcode}
 	
-	\subsection{Bounded Buffer}
+	\subsection{MPMC Bounded Queue (Vyukov)}
 \begin{lispcode}
 (defparameter *buffer* (make-bounded-queue 64))  ; Must be power of 2
 
@@ -203,7 +221,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (format t "Got: ~A~%" value)))
 \end{lispcode}
 	
-	\subsection{SPSC}
+	\subsection{SPSC Bounded Queue}
 \begin{lispcode}
 (defparameter *spsc* (make-spsc-queue 256))  ; Must be power of 2
 ;; Producer thread only
@@ -227,48 +245,36 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (handle-empty-queue)))
 \end{lispcode}
 	
+	\section{API Reference}
 	\subsection{Atomic Operations}
-	\subsubsection*{Types}
 	\subsubsection{ATOMIC-REF}
-	\subsubsection*{Functions}
 	\subsubsection{MAKE-ATOMIC-REF}
 	\subsubsection{ATOMIC-REF-VALUE}
-	
-	\subsection{Macros}
 	\subsubsection{CAS}
 	\subsubsection{ATOMIC-INCF}
-	
-	\subsection{Utility Functions}
 	\subsubsection{MEMORY-BARRIER}
 	
-	\subsection{Unbounded Queue}
-	\subsubsection*{Class}
+	\subsection{UMPMC Unbounded Queue}
 	\subsubsection{QUEUE}
 	Lock-free unbounded queue supporting multiple producers and consumers.
-	\subsubsection*{Functions}
 	\subsubsection{MAKE-QUEUE}
 	\subsubsection{QUEUE-PUSH}
 	\subsubsection{QUEUE-POP}
 	\subsubsection{QUEUE-EMPTY-P}
 	
-	\subsection{Bounded Queue}
-	\subsubsection*{Class}
+	\subsection{MPMC Bounded Queue}
 	\subsubsection{BOUNDED-QUEUE}
-	\subsubsection*{Functions}
 	\subsubsection{MAKE-BOUNDED-QUEUE}
 	\subsubsection{BOUNDED-QUEUE-CAPACITY}
 	\subsubsection{BOUNDED-QUEUE-PUSH}
 	\subsubsection{BOUNDED-QUEUE-POP}
 	\subsubsection{BOUNDED-QUEUE-EMPTY-P}
 	\subsubsection{BOUNDED-QUEUE-FULL-P}
-	\subsubsection*{Batch Operations}
 	\subsubsection{BOUNDED-QUEUE-PUSH-BATCH}
 	\subsubsection{BOUNDED-QUEUE-POP-BATCH}
 	
-	\subsection{SPSC Queue}
-	\subsubsection*{Class}
+	\subsection{SPSC Bounded Queue}
 	\subsubsection{SPSC-QUEUE}
-	\subsubsection*{Functions}
 	\subsubsection{MAKE-SPSC-QUEUE}
 	\subsubsection{SPSC-PUSH}
 	\subsubsection{SPSC-POP}

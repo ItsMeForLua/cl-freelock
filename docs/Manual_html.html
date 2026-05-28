@@ -1,0 +1,2988 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<meta name="generator" content="LaTeX Lwarp package" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>cl-freelock Manual</title>
+<link rel="stylesheet" type="text/css" href="lwarp.css" />
+
+<script>
+// Lwarp MathJax emulation code
+//
+// Based on code by Davide P. Cervone.
+// Equation numbering: https://github.com/mathjax/MathJax/issues/2427
+// Starred and ifnextchar macros: https://github.com/mathjax/MathJax/issues/2428
+// \left, \right delimiters: https://github.com/mathjax/MathJax/issues/2535
+//
+// Modified by Brian Dunn to adjust equation numbering and add subequations.
+//
+// LaTeX can use \seteqnumber{subequations?}{section}{number} before each equation.
+// subequations? is 0 usually, 1 if inside subequations.
+// section is a string printed as-is, or empty.
+// number is auto-incremented by MathJax between equations.
+//
+MathJax = {
+    subequations: "0",
+    section: "",
+    loader: {
+        load: ['[tex]/tagformat', '[tex]/textmacros'],
+    },
+    startup: {
+        ready() {
+            //      These would be replaced by import commands if you wanted to make
+            //      a proper extension.
+            const Configuration = MathJax._.input.tex.Configuration.Configuration;
+            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+            const Macro = MathJax._.input.tex.Symbol.Macro;
+            const TexError = MathJax._.input.tex.TexError.default;
+            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+            const expandable = MathJax._.util.Options.expandable;
+
+
+            //      Insert the replacement string into the TeX string, and check
+            //      that there haven't been too many maxro substitutions (prevents
+            //      infinite loops).
+            const useArgument = (parser, text) => {
+                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                parser.i = 0;
+                if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                    throw new TexError('MaxMacroSub1',
+                    'MathJax maximum macro substitution count exceeded; ' +
+                    'is there a recursive macro call?');
+                }
+            }
+
+
+            //      Create the command map for:
+            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+            new CommandMap('Lwarp-macros', {
+                ifstar: 'IfstarFunction',
+                ifnextchar: 'IfnextcharFunction',
+                ifblank: 'IfblankFunction',
+                ifstrequal: 'IfstrequalFunction',
+                gsubstitute: 'GsubstituteFunction',
+                seteqnumber: 'SeteqnumberFunction'
+            }, {
+                //      This function implements an ifstar macro.
+                IfstarFunction(parser, name) {
+                    const resultstar = parser.GetArgument(name);
+                    const resultnostar = parser.GetArgument(name);
+                    const star = parser.GetStar();                      // true if there is a *
+                    useArgument(parser, star ? resultstar : resultnostar);
+                },
+
+
+                //      This function implements an ifnextchar macro.
+                IfnextcharFunction(parser, name) {
+                    let whichchar = parser.GetArgument(name);
+                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                        // $ syntax highlighting
+                        whichchar = String.fromCodePoint(parseInt(whichchar));
+                    }
+                    const resultnextchar = parser.GetArgument(name);
+                    const resultnotnextchar = parser.GetArgument(name);
+                    const gotchar = (parser.GetNext() === whichchar);
+                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                },
+
+
+                // This function implements an ifblank macro.
+                IfblankFunction(parser, name) {
+                    const blankarg = parser.GetArgument(name);
+                    const resultblank = parser.GetArgument(name);
+                    const resultnotblank = parser.GetArgument(name);
+                    const isblank = (blankarg.trim() == "");
+                    useArgument(parser, isblank ? resultblank : resultnotblank);
+                },
+
+
+                // This function implements an ifstrequal macro.
+                IfstrequalFunction(parser, name) {
+                    const strequalfirst = parser.GetArgument(name);
+                    const strequalsecond = parser.GetArgument(name);
+                    const resultequal = parser.GetArgument(name);
+                    const resultnotequal = parser.GetArgument(name);
+                    const isequal = (strequalfirst == strequalsecond);
+                    useArgument(parser, isequal ? resultequal : resultnotequal);
+                },
+
+
+                // This function implements a gsub macro.
+                GsubstituteFunction(parser, name) {
+                    const gsubfirst = parser.GetArgument(name);
+                    const gsubsecond = parser.GetArgument(name);
+                    const gsubthird = parser.GetArgument(name);
+                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                    useArgument(parser, gsubresult);
+                },
+
+
+                //      This function modifies the equation numbers.
+                SeteqnumberFunction(parser, name) {
+                        //   Get the macro parameters
+                        const star = parser.GetStar();                    // true if there is a *
+                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
+                        const newsubequations = parser.GetArgument(name);    // the subequations argument
+                        const neweqsection = parser.GetArgument(name);    // the eq section argument
+                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
+                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
+                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
+                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                }
+
+
+            });
+
+
+            //      Create the Lwarp-macros package
+            Configuration.create('Lwarp-macros', {
+                handler: {macro: ['Lwarp-macros']}
+            });
+
+
+            MathJax.startup.defaultReady();
+
+
+            // For forward references:
+            MathJax.startup.input[0].preFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        MathJax.config.subequations = math.inputData.recompile.subequations;
+                        MathJax.config.section = math.inputData.recompile.section;
+                }
+            });
+            MathJax.startup.input[0].postFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        math.inputData.recompile.subequations = MathJax.config.subequations;
+                        math.inputData.recompile.section = MathJax.config.section;
+                }
+            });
+
+
+                // For \left, \right with unicode-math:
+                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                const {Symbol} = MathJax._.input.tex.Symbol;
+                const {MapHandler} = MathJax._.input.tex.MapHandler;
+                const delimiter = MapHandler.getMap('delimiter');
+                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+        }        // ready
+    },          // startup
+
+
+    tex: {
+        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+        tags: "ams",
+                tagformat: {
+                        number: function (n) {
+                             if(MathJax.config.subequations==0)
+                                 return(MathJax.config.section + n);
+                             else
+                                 return(MathJax.config.section + String.fromCharCode(96+n));
+                        },
+                },
+    }
+}
+</script>
+
+
+<script
+        id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+></script>
+
+</head>
+<body>
+<!--|Using lwarp|Manual.html|-->
+
+
+<div class="homepagegrid">
+
+
+<main class="bodycontainer">
+
+
+<section class="textbody">
+
+<a id="Manual-autofile-0"></a>
+
+<!--MathJax customizations:-->
+<div data-nosnippet
+    style="display:none"
+>
+
+\(\newcommand{\footnotename}{footnote}\)
+
+\(\def \LWRfootnote {1}\)
+
+\(\newcommand {\footnote }[2][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\newcommand {\footnotemark }[1][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\let \LWRorighspace \hspace \)
+
+\(\renewcommand {\hspace }{\ifstar \LWRorighspace \LWRorighspace }\)
+
+\(\newcommand {\TextOrMath }[2]{#2}\)
+
+\(\newcommand {\mathnormal }[1]{{#1}}\)
+
+\(\newcommand \ensuremath [1]{#1}\)
+
+\(\newcommand {\LWRframebox }[2][]{\fbox {#2}} \newcommand {\framebox }[1][]{\LWRframebox } \)
+
+\(\newcommand {\setlength }[2]{}\)
+
+\(\newcommand {\addtolength }[2]{}\)
+
+\(\newcommand {\setcounter }[2]{}\)
+
+\(\newcommand {\addtocounter }[2]{}\)
+
+\(\newcommand {\arabic }[1]{}\)
+
+\(\newcommand {\number }[1]{}\)
+
+\(\newcommand {\noalign }[1]{\text {#1}\notag \\}\)
+
+\(\newcommand {\cline }[1]{}\)
+
+\(\newcommand {\directlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\luatexdirectlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\protect }{}\)
+
+\(\def \LWRabsorbnumber #1 {}\)
+
+\(\def \LWRabsorbquotenumber &quot;#1 {}\)
+
+\(\newcommand {\LWRabsorboption }[1][]{}\)
+
+\(\newcommand {\LWRabsorbtwooptions }[1][]{\LWRabsorboption }\)
+
+\(\def \mathchar {\ifnextchar &quot;\LWRabsorbquotenumber \LWRabsorbnumber }\)
+
+\(\def \mathcode #1={\mathchar }\)
+
+\(\let \delcode \mathcode \)
+
+\(\let \delimiter \mathchar \)
+
+\(\def \oe {\unicode {x0153}}\)
+
+\(\def \OE {\unicode {x0152}}\)
+
+\(\def \ae {\unicode {x00E6}}\)
+
+\(\def \AE {\unicode {x00C6}}\)
+
+\(\def \aa {\unicode {x00E5}}\)
+
+\(\def \AA {\unicode {x00C5}}\)
+
+\(\def \o {\unicode {x00F8}}\)
+
+\(\def \O {\unicode {x00D8}}\)
+
+\(\def \l {\unicode {x0142}}\)
+
+\(\def \L {\unicode {x0141}}\)
+
+\(\def \ss {\unicode {x00DF}}\)
+
+\(\def \SS {\unicode {x1E9E}}\)
+
+\(\def \dag {\unicode {x2020}}\)
+
+\(\def \ddag {\unicode {x2021}}\)
+
+\(\def \P {\unicode {x00B6}}\)
+
+\(\def \copyright {\unicode {x00A9}}\)
+
+\(\def \pounds {\unicode {x00A3}}\)
+
+\(\let \LWRref \ref \)
+
+\(\renewcommand {\ref }{\ifstar \LWRref \LWRref }\)
+
+\( \newcommand {\multicolumn }[3]{#3}\)
+
+\(\require {textcomp}\)
+
+\(\newcommand {\intertext }[1]{\text {#1}\notag \\}\)
+
+\(\let \Hat \hat \)
+
+\(\let \Check \check \)
+
+\(\let \Tilde \tilde \)
+
+\(\let \Acute \acute \)
+
+\(\let \Grave \grave \)
+
+\(\let \Dot \dot \)
+
+\(\let \Ddot \ddot \)
+
+\(\let \Breve \breve \)
+
+\(\let \Bar \bar \)
+
+\(\let \Vec \vec \)
+
+\(\require {mathtools}\)
+
+\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
+
+\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
+
+\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
+
+\(\newcommand {\simcolon }{\sim \vcentcolon }\)
+
+\(\newcommand {\Simcolon }{\sim \dblcolon }\)
+
+\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
+
+\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
+
+\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
+
+\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
+
+\(\newenvironment {crampedsubarray}[1]{}{}\)
+
+\(\newcommand {\smashoperator }[2][]{#2\limits }\)
+
+\(\newcommand {\SwapAboveDisplaySkip }{}\)
+
+\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
+
+\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
+
+\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
+
+\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
+
+\(\let \xlongleftarrow \xleftarrow \)
+
+\(\let \xlongrightarrow \xrightarrow \)
+
+\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
+
+\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
+
+\(\let \LWRorigshoveleft \shoveleft \)
+
+\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
+
+\(\let \LWRorigshoveright \shoveright \)
+
+\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
+
+\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
+
+</div>
+
+<a id="Manual-autopage-1"></a>
+<div class="titlepage">
+
+<h1>cl-freelock Manual</h1>
+
+
+<div class="author">
+
+
+<div class="oneauthor">
+
+<p>
+Andrew D. France
+</p>
+</div>
+
+</div>
+
+
+<div class="titledate">
+
+<p>
+Last edited: 2026-05-28T01:05:55-05:00 UTC
+</p>
+</div>
+
+</div>
+<!--
+...... section Contents ......
+-->
+<h4 id="autosec-3">Contents</h4>
+<a id="Manual-autopage-3"></a>
+
+
+
+<nav class="toc">
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-6" class="tocsubsection" >
+<span class="sectionnumber">1.1</span>&#x2003;Getting Started: Installation</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-10" class="tocsubsection" >
+<span class="sectionnumber">1.2</span>&#x2003;Basic Usage</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-12" class="tocsubsubsection" >
+<span class="sectionnumber">1.2.1</span>&#x2003;MPMC Unbounded Queue (Michael-Scott)</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-19" class="tocsubsection" >
+<span class="sectionnumber">1.3</span>&#x2003;MPMC Bounded Queue (Vyukov)</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-21" class="tocsubsection" >
+<span class="sectionnumber">1.4</span>&#x2003;SPSC Bounded Queue</a>
+</p>
+
+
+<p>
+<a href="Tutorial.html#autosec-23" class="tocsubsection" >
+<span class="sectionnumber">1.5</span>&#x2003;Error Handling</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-27" class="tocsubsection" >
+<span class="sectionnumber">2.1</span>&#x2003;Atomic Operations</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-28" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.1</span>&#x2003;ATOMIC-REF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-29" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.2</span>&#x2003;MAKE-ATOMIC-REF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-30" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.3</span>&#x2003;ATOMIC-REF-VALUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-31" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.4</span>&#x2003;CAS</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-32" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.5</span>&#x2003;ATOMIC-INCF</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-33" class="tocsubsubsection" >
+<span class="sectionnumber">2.1.6</span>&#x2003;MEMORY-BARRIER</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-34" class="tocsubsection" >
+<span class="sectionnumber">2.2</span>&#x2003;UMPMC Unbounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-35" class="tocsubsubsection" >
+<span class="sectionnumber">2.2.1</span>&#x2003;QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-36" class="tocsubsubsection" >
+<span class="sectionnumber">2.2.2</span>&#x2003;MAKE-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-37" class="tocsubsubsection" >
+<span class="sectionnumber">2.2.3</span>&#x2003;QUEUE-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-38" class="tocsubsubsection" >
+<span class="sectionnumber">2.2.4</span>&#x2003;QUEUE-POP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-39" class="tocsubsubsection" >
+<span class="sectionnumber">2.2.5</span>&#x2003;QUEUE-EMPTY-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-40" class="tocsubsection" >
+<span class="sectionnumber">2.3</span>&#x2003;MPMC Bounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.1</span>&#x2003;BOUNDED-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.2</span>&#x2003;MAKE-BOUNDED-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.3</span>&#x2003;BOUNDED-QUEUE-CAPACITY</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.4</span>&#x2003;BOUNDED-QUEUE-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.5</span>&#x2003;BOUNDED-QUEUE-POP</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-46" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.6</span>&#x2003;BOUNDED-QUEUE-EMPTY-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.7</span>&#x2003;BOUNDED-QUEUE-FULL-P</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.8</span>&#x2003;BOUNDED-QUEUE-PUSH-BATCH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-49" class="tocsubsubsection" >
+<span class="sectionnumber">2.3.9</span>&#x2003;BOUNDED-QUEUE-POP-BATCH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-50" class="tocsubsection" >
+<span class="sectionnumber">2.4</span>&#x2003;SPSC Bounded Queue</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
+<span class="sectionnumber">2.4.1</span>&#x2003;SPSC-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-52" class="tocsubsubsection" >
+<span class="sectionnumber">2.4.2</span>&#x2003;MAKE-SPSC-QUEUE</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
+<span class="sectionnumber">2.4.3</span>&#x2003;SPSC-PUSH</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-54" class="tocsubsubsection" >
+<span class="sectionnumber">2.4.4</span>&#x2003;SPSC-POP</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-57" class="tocsubsection" >
+<span class="sectionnumber">3.1</span>&#x2003;General Performance Principles</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-58" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.1</span>&#x2003;Choose the Right Data Structure</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-59" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.2</span>&#x2003;Capacity Selection</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-60" class="tocsubsubsection" >
+<span class="sectionnumber">3.1.3</span>&#x2003;Thread Contention</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-61" class="tocsubsection" >
+<span class="sectionnumber">3.2</span>&#x2003;Optimization Techniques</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-62" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.1</span>&#x2003;Batch Operations</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-63" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.2</span>&#x2003;Avoid Busy Waiting</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-64" class="tocsubsubsection" >
+<span class="sectionnumber">3.2.3</span>&#x2003;Memory Allocation</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-65" class="tocsubsection" >
+<span class="sectionnumber">3.3</span>&#x2003;Implementation-Specific Notes</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-66" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.1</span>&#x2003;SBCL</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-67" class="tocsubsubsection" >
+<span class="sectionnumber">3.3.2</span>&#x2003;CLASP</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-68" class="tocsubsection" >
+<span class="sectionnumber">3.4</span>&#x2003;Common Pitfalls</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-69" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.1</span>&#x2003;Wrong capacity</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-70" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.2</span>&#x2003;Thread safety</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-71" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.3</span>&#x2003;Busy waitings</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-72" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.4</span>&#x2003;Memory leaks</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-73" class="tocsubsubsection" >
+<span class="sectionnumber">3.4.5</span>&#x2003;False sharing</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-74" class="tocsubsection" >
+<span class="sectionnumber">3.5</span>&#x2003;Recommended Patterns</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-75" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.1</span>&#x2003;Producer-Consumer Pool</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-76" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.2</span>&#x2003;Basic Producer-Consumer</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-77" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.3</span>&#x2003;Bounded Buffer with Batch Processing</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-78" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.4</span>&#x2003;SPSC Pipeline</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-79" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.5</span>&#x2003;Load Balancing with Multiple Queues</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-80" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.6</span>&#x2003;Web Server Request Queue</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-81" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.7</span>&#x2003;Atomic Counter Service</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-82" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.8</span>&#x2003;Event Processing Pipeline</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-83" class="tocsubsubsection" >
+<span class="sectionnumber">3.5.9</span>&#x2003;Memory Pool with Lock-Free Allocation</a>
+</p>
+</nav>
+
+</section>
+
+</main>
+
+</div><!-- grid -->
+</body>
+</html>
+<!--|Start file|Tutorial.html|-->
+
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<meta name="generator" content="LaTeX Lwarp package" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>cl-freelock Manual - Tutorial</title>
+<link rel="stylesheet" type="text/css" href="lwarp.css" />
+
+<script>
+// Lwarp MathJax emulation code
+//
+// Based on code by Davide P. Cervone.
+// Equation numbering: https://github.com/mathjax/MathJax/issues/2427
+// Starred and ifnextchar macros: https://github.com/mathjax/MathJax/issues/2428
+// \left, \right delimiters: https://github.com/mathjax/MathJax/issues/2535
+//
+// Modified by Brian Dunn to adjust equation numbering and add subequations.
+//
+// LaTeX can use \seteqnumber{subequations?}{section}{number} before each equation.
+// subequations? is 0 usually, 1 if inside subequations.
+// section is a string printed as-is, or empty.
+// number is auto-incremented by MathJax between equations.
+//
+MathJax = {
+    subequations: "0",
+    section: "",
+    loader: {
+        load: ['[tex]/tagformat', '[tex]/textmacros'],
+    },
+    startup: {
+        ready() {
+            //      These would be replaced by import commands if you wanted to make
+            //      a proper extension.
+            const Configuration = MathJax._.input.tex.Configuration.Configuration;
+            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+            const Macro = MathJax._.input.tex.Symbol.Macro;
+            const TexError = MathJax._.input.tex.TexError.default;
+            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+            const expandable = MathJax._.util.Options.expandable;
+
+
+            //      Insert the replacement string into the TeX string, and check
+            //      that there haven't been too many maxro substitutions (prevents
+            //      infinite loops).
+            const useArgument = (parser, text) => {
+                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                parser.i = 0;
+                if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                    throw new TexError('MaxMacroSub1',
+                    'MathJax maximum macro substitution count exceeded; ' +
+                    'is there a recursive macro call?');
+                }
+            }
+
+
+            //      Create the command map for:
+            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+            new CommandMap('Lwarp-macros', {
+                ifstar: 'IfstarFunction',
+                ifnextchar: 'IfnextcharFunction',
+                ifblank: 'IfblankFunction',
+                ifstrequal: 'IfstrequalFunction',
+                gsubstitute: 'GsubstituteFunction',
+                seteqnumber: 'SeteqnumberFunction'
+            }, {
+                //      This function implements an ifstar macro.
+                IfstarFunction(parser, name) {
+                    const resultstar = parser.GetArgument(name);
+                    const resultnostar = parser.GetArgument(name);
+                    const star = parser.GetStar();                      // true if there is a *
+                    useArgument(parser, star ? resultstar : resultnostar);
+                },
+
+
+                //      This function implements an ifnextchar macro.
+                IfnextcharFunction(parser, name) {
+                    let whichchar = parser.GetArgument(name);
+                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                        // $ syntax highlighting
+                        whichchar = String.fromCodePoint(parseInt(whichchar));
+                    }
+                    const resultnextchar = parser.GetArgument(name);
+                    const resultnotnextchar = parser.GetArgument(name);
+                    const gotchar = (parser.GetNext() === whichchar);
+                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                },
+
+
+                // This function implements an ifblank macro.
+                IfblankFunction(parser, name) {
+                    const blankarg = parser.GetArgument(name);
+                    const resultblank = parser.GetArgument(name);
+                    const resultnotblank = parser.GetArgument(name);
+                    const isblank = (blankarg.trim() == "");
+                    useArgument(parser, isblank ? resultblank : resultnotblank);
+                },
+
+
+                // This function implements an ifstrequal macro.
+                IfstrequalFunction(parser, name) {
+                    const strequalfirst = parser.GetArgument(name);
+                    const strequalsecond = parser.GetArgument(name);
+                    const resultequal = parser.GetArgument(name);
+                    const resultnotequal = parser.GetArgument(name);
+                    const isequal = (strequalfirst == strequalsecond);
+                    useArgument(parser, isequal ? resultequal : resultnotequal);
+                },
+
+
+                // This function implements a gsub macro.
+                GsubstituteFunction(parser, name) {
+                    const gsubfirst = parser.GetArgument(name);
+                    const gsubsecond = parser.GetArgument(name);
+                    const gsubthird = parser.GetArgument(name);
+                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                    useArgument(parser, gsubresult);
+                },
+
+
+                //      This function modifies the equation numbers.
+                SeteqnumberFunction(parser, name) {
+                        //   Get the macro parameters
+                        const star = parser.GetStar();                    // true if there is a *
+                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
+                        const newsubequations = parser.GetArgument(name);    // the subequations argument
+                        const neweqsection = parser.GetArgument(name);    // the eq section argument
+                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
+                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
+                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
+                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                }
+
+
+            });
+
+
+            //      Create the Lwarp-macros package
+            Configuration.create('Lwarp-macros', {
+                handler: {macro: ['Lwarp-macros']}
+            });
+
+
+            MathJax.startup.defaultReady();
+
+
+            // For forward references:
+            MathJax.startup.input[0].preFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        MathJax.config.subequations = math.inputData.recompile.subequations;
+                        MathJax.config.section = math.inputData.recompile.section;
+                }
+            });
+            MathJax.startup.input[0].postFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        math.inputData.recompile.subequations = MathJax.config.subequations;
+                        math.inputData.recompile.section = MathJax.config.section;
+                }
+            });
+
+
+                // For \left, \right with unicode-math:
+                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                const {Symbol} = MathJax._.input.tex.Symbol;
+                const {MapHandler} = MathJax._.input.tex.MapHandler;
+                const delimiter = MapHandler.getMap('delimiter');
+                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+        }        // ready
+    },          // startup
+
+
+    tex: {
+        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+        tags: "ams",
+                tagformat: {
+                        number: function (n) {
+                             if(MathJax.config.subequations==0)
+                                 return(MathJax.config.section + n);
+                             else
+                                 return(MathJax.config.section + String.fromCharCode(96+n));
+                        },
+                },
+    }
+}
+</script>
+
+
+<script
+        id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+></script>
+
+</head>
+<body>
+
+
+<a id="Manual-autopage-4"></a>
+<div class="pagegrid">
+
+
+<nav class="topnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+<div class="sidetoccontainer">
+
+
+<nav class="sidetoc">
+
+
+<div class="sidetoctitle">
+
+<p>
+<span class="sidetocthetitle">cl-freelock Manual</span>
+</p>
+
+<p>
+Contents
+</p>
+</div>
+
+
+<div class="sidetoccontents">
+
+<p>
+<a href="Manual.html" class="linkhome" >
+Home</a>
+</p>
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+</div>
+
+</nav>
+
+</div>
+
+
+<main class="bodycontainer">
+
+
+<section class="textbody">
+
+<h1>cl-freelock Manual</h1>
+
+<!--MathJax customizations:-->
+<div data-nosnippet
+    style="display:none"
+>
+
+\(\newcommand{\footnotename}{footnote}\)
+
+\(\def \LWRfootnote {1}\)
+
+\(\newcommand {\footnote }[2][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\newcommand {\footnotemark }[1][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\let \LWRorighspace \hspace \)
+
+\(\renewcommand {\hspace }{\ifstar \LWRorighspace \LWRorighspace }\)
+
+\(\newcommand {\TextOrMath }[2]{#2}\)
+
+\(\newcommand {\mathnormal }[1]{{#1}}\)
+
+\(\newcommand \ensuremath [1]{#1}\)
+
+\(\newcommand {\LWRframebox }[2][]{\fbox {#2}} \newcommand {\framebox }[1][]{\LWRframebox } \)
+
+\(\newcommand {\setlength }[2]{}\)
+
+\(\newcommand {\addtolength }[2]{}\)
+
+\(\newcommand {\setcounter }[2]{}\)
+
+\(\newcommand {\addtocounter }[2]{}\)
+
+\(\newcommand {\arabic }[1]{}\)
+
+\(\newcommand {\number }[1]{}\)
+
+\(\newcommand {\noalign }[1]{\text {#1}\notag \\}\)
+
+\(\newcommand {\cline }[1]{}\)
+
+\(\newcommand {\directlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\luatexdirectlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\protect }{}\)
+
+\(\def \LWRabsorbnumber #1 {}\)
+
+\(\def \LWRabsorbquotenumber &quot;#1 {}\)
+
+\(\newcommand {\LWRabsorboption }[1][]{}\)
+
+\(\newcommand {\LWRabsorbtwooptions }[1][]{\LWRabsorboption }\)
+
+\(\def \mathchar {\ifnextchar &quot;\LWRabsorbquotenumber \LWRabsorbnumber }\)
+
+\(\def \mathcode #1={\mathchar }\)
+
+\(\let \delcode \mathcode \)
+
+\(\let \delimiter \mathchar \)
+
+\(\def \oe {\unicode {x0153}}\)
+
+\(\def \OE {\unicode {x0152}}\)
+
+\(\def \ae {\unicode {x00E6}}\)
+
+\(\def \AE {\unicode {x00C6}}\)
+
+\(\def \aa {\unicode {x00E5}}\)
+
+\(\def \AA {\unicode {x00C5}}\)
+
+\(\def \o {\unicode {x00F8}}\)
+
+\(\def \O {\unicode {x00D8}}\)
+
+\(\def \l {\unicode {x0142}}\)
+
+\(\def \L {\unicode {x0141}}\)
+
+\(\def \ss {\unicode {x00DF}}\)
+
+\(\def \SS {\unicode {x1E9E}}\)
+
+\(\def \dag {\unicode {x2020}}\)
+
+\(\def \ddag {\unicode {x2021}}\)
+
+\(\def \P {\unicode {x00B6}}\)
+
+\(\def \copyright {\unicode {x00A9}}\)
+
+\(\def \pounds {\unicode {x00A3}}\)
+
+\(\let \LWRref \ref \)
+
+\(\renewcommand {\ref }{\ifstar \LWRref \LWRref }\)
+
+\( \newcommand {\multicolumn }[3]{#3}\)
+
+\(\require {textcomp}\)
+
+\(\newcommand {\intertext }[1]{\text {#1}\notag \\}\)
+
+\(\let \Hat \hat \)
+
+\(\let \Check \check \)
+
+\(\let \Tilde \tilde \)
+
+\(\let \Acute \acute \)
+
+\(\let \Grave \grave \)
+
+\(\let \Dot \dot \)
+
+\(\let \Ddot \ddot \)
+
+\(\let \Breve \breve \)
+
+\(\let \Bar \bar \)
+
+\(\let \Vec \vec \)
+
+\(\require {mathtools}\)
+
+\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
+
+\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
+
+\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
+
+\(\newcommand {\simcolon }{\sim \vcentcolon }\)
+
+\(\newcommand {\Simcolon }{\sim \dblcolon }\)
+
+\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
+
+\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
+
+\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
+
+\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
+
+\(\newenvironment {crampedsubarray}[1]{}{}\)
+
+\(\newcommand {\smashoperator }[2][]{#2\limits }\)
+
+\(\newcommand {\SwapAboveDisplaySkip }{}\)
+
+\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
+
+\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
+
+\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
+
+\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
+
+\(\let \xlongleftarrow \xleftarrow \)
+
+\(\let \xlongrightarrow \xrightarrow \)
+
+\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
+
+\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
+
+\(\let \LWRorigshoveleft \shoveleft \)
+
+\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
+
+\(\let \LWRorigshoveright \shoveright \)
+
+\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
+
+\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
+
+</div>
+
+<!--
+...... section Tutorial ......
+-->
+<h4 id="autosec-5"><span class="sectionnumber">1&#x2003;</span>Tutorial</h4>
+<a id="Manual-autopage-5"></a>
+<a id="Manual-autofile-1"></a>
+<!--
+...... subsection Getting Started: Installation ......
+-->
+<h5 id="autosec-6"><span class="sectionnumber">1.1&#x2003;</span>Getting Started: Installation</h5>
+<a id="Manual-autopage-6"></a>
+
+
+<p>
+Once available on quicklisp, you will be able to simply run:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(ql:quickload :cl-freelock)
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+For now, clone the repository into your Quicklisp local-projects directory:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+cd ~/quicklisp/local-projects/
+git clone https://github.com/ItsMeForLua/cl-freelock.git
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+Then, load the system in your REPL:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(ql:quickload :cl-freelock)
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection Basic Usage ......
+-->
+<h5 id="autosec-10"><span class="sectionnumber">1.2&#x2003;</span>Basic Usage</h5>
+<a id="Manual-autopage-10"></a>
+
+
+<p>
+In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+</p>
+<!--
+...... subsubsection FYI ......
+-->
+<h6 id="autosec-11">FYI</h6>
+<a id="Manual-autopage-11"></a>
+
+
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>fl</span> when calling its functions.
+</p>
+<p>
+<span style="width:20pt; display:inline-block"><!----></span>For example: <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(fl:queue-push *work-queue* i)</span>
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> The API reference for cl-freelock is mostly written with SBCL in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite
+minor.
+</p>
+</li>
+</ul>
+<!--
+...... subsubsection MPMC Unbounded Queue (Michael-Scott) ......
+-->
+<h6 id="autosec-12"><span class="sectionnumber">1.2.1&#x2003;</span>MPMC Unbounded Queue (Michael-Scott)</h6>
+<a id="Manual-autopage-12"></a>
+
+
+<p>
+The algorithm used for unbounded queues is based off of the Michael-Scott algorithm. We specifically use Compare-And-Swap (CAS) operations to link nodes and swing the head and tail pointers.
+</p>
+
+<p>
+We identify three main reasons one would use this particular queue type:
+</p>
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> When the workload is highly variable in predictability, such that you cannot guarantee a maximum capacity for your queue ahead of time.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> You have a thread pool architecture with multiple producer threads that are throwing jobs onto the queue, and multiple worker threads are simultaneously pulling jobs off. i.e., An N-to-N
+architecture.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">3.</span> If your project requires immunity from deadlocks.
+</p>
+</li>
+</ul>
+<!--
+...... subsubsection Producers ......
+-->
+<h6 id="autosec-13">Producers</h6>
+<a id="Manual-autopage-13"></a>
+
+
+<p>
+A producer thread works by calling <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(queue-push *work-queue* item)</span>. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defun producer ()
+(loop for i from 1 to 1000 do
+(fl:queue-push *work-queue* i)
+(sleep 0.001)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if
+you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-14"></a><sup>,</sup> <sup>2</sup>
+</p>
+<div role="note" class="footnotes">
+
+<a id="Manual-autopage-15"></a>
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+</p>
+
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state – hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
+would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
+</p>
+
+
+</div>
+<!--
+...... subsubsection Consumers ......
+-->
+<h6 id="autosec-16">Consumers</h6>
+<a id="Manual-autopage-16"></a>
+
+
+<p>
+A consumer thread works by calling <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(queue-pop *work-queue*)</span>. This procedure does not return lisp conditions; instead, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>queue-pop</span> returns two specific values:
+</p>
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> The <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>item</span> itself or <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>NIL</span> if empty.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> A <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>success</span> boolean, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>T</span> if an item was grabbed, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>NIL</span> if the queue was empty.
+</p>
+</li>
+</ul>
+
+<p>
+n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
+</p>
+
+<p>
+You must wrap the procedure in a <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>multiple-value-bind</span> to check if the pop was successful.
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *work-queue* (make-queue))
+;; Producer thread
+(defun producer ()
+(loop for i from 1 to 1000 do
+(queue-push *work-queue* i)
+(sleep 0.001)))
+
+;; Consumer thread
+(defun consumer ()
+(loop
+(multiple-value-bind (item found)
+(queue-pop *work-queue*)
+(if found
+(format t "Processing: ~A~&percnt;" item)
+(sleep 0.001)))))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<div role="note" class="footnotes">
+
+<a id="Manual-autopage-18"></a>
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue – consequently, this tanks a systems performance.
+</p>
+
+
+</div>
+<!--
+...... subsection MPMC Bounded Queue (Vyukov) ......
+-->
+<h5 id="autosec-19"><span class="sectionnumber">1.3&#x2003;</span>MPMC Bounded Queue (Vyukov)</h5>
+<a id="Manual-autopage-19"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *buffer* (make-bounded-queue 64))   ; Must be power of 2
+
+;; Non-blocking operations
+(when (bounded-queue-push *buffer* "data")
+(format t "Push succeeded~&percnt;"))
+
+(multiple-value-bind (value success)
+(bounded-queue-pop *buffer*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection SPSC Bounded Queue ......
+-->
+<h5 id="autosec-21"><span class="sectionnumber">1.4&#x2003;</span>SPSC Bounded Queue</h5>
+<a id="Manual-autopage-21"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *spsc* (make-spsc-queue 256))   ; Must be power of 2
+;; Producer thread only
+(when (spsc-push *spsc* "fast-data")
+(format t "Pushed successfully~&percnt;"))
+;; Consumer thread only
+(multiple-value-bind (value success)
+(spsc-pop *spsc*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection Error Handling ......
+-->
+<h5 id="autosec-23"><span class="sectionnumber">1.5&#x2003;</span>Error Handling</h5>
+<a id="Manual-autopage-23"></a>
+
+
+<p>
+Operations return multiple values to indicate success/failure rather than signaling conditions:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+;; Always check the second return value
+(multiple-value-bind (value success)
+(queue-pop *queue*)
+(if success
+(process value)
+(handle-empty-queue)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+</section>
+
+</main>
+
+
+<nav class="botnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+
+</div><!-- grid -->
+</body>
+</html>
+<!--|Start file|API-Reference.html|-->
+
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<meta name="generator" content="LaTeX Lwarp package" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>cl-freelock Manual - API Reference</title>
+<link rel="stylesheet" type="text/css" href="lwarp.css" />
+
+<script>
+// Lwarp MathJax emulation code
+//
+// Based on code by Davide P. Cervone.
+// Equation numbering: https://github.com/mathjax/MathJax/issues/2427
+// Starred and ifnextchar macros: https://github.com/mathjax/MathJax/issues/2428
+// \left, \right delimiters: https://github.com/mathjax/MathJax/issues/2535
+//
+// Modified by Brian Dunn to adjust equation numbering and add subequations.
+//
+// LaTeX can use \seteqnumber{subequations?}{section}{number} before each equation.
+// subequations? is 0 usually, 1 if inside subequations.
+// section is a string printed as-is, or empty.
+// number is auto-incremented by MathJax between equations.
+//
+MathJax = {
+    subequations: "0",
+    section: "",
+    loader: {
+        load: ['[tex]/tagformat', '[tex]/textmacros'],
+    },
+    startup: {
+        ready() {
+            //      These would be replaced by import commands if you wanted to make
+            //      a proper extension.
+            const Configuration = MathJax._.input.tex.Configuration.Configuration;
+            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+            const Macro = MathJax._.input.tex.Symbol.Macro;
+            const TexError = MathJax._.input.tex.TexError.default;
+            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+            const expandable = MathJax._.util.Options.expandable;
+
+
+            //      Insert the replacement string into the TeX string, and check
+            //      that there haven't been too many maxro substitutions (prevents
+            //      infinite loops).
+            const useArgument = (parser, text) => {
+                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                parser.i = 0;
+                if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                    throw new TexError('MaxMacroSub1',
+                    'MathJax maximum macro substitution count exceeded; ' +
+                    'is there a recursive macro call?');
+                }
+            }
+
+
+            //      Create the command map for:
+            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+            new CommandMap('Lwarp-macros', {
+                ifstar: 'IfstarFunction',
+                ifnextchar: 'IfnextcharFunction',
+                ifblank: 'IfblankFunction',
+                ifstrequal: 'IfstrequalFunction',
+                gsubstitute: 'GsubstituteFunction',
+                seteqnumber: 'SeteqnumberFunction'
+            }, {
+                //      This function implements an ifstar macro.
+                IfstarFunction(parser, name) {
+                    const resultstar = parser.GetArgument(name);
+                    const resultnostar = parser.GetArgument(name);
+                    const star = parser.GetStar();                      // true if there is a *
+                    useArgument(parser, star ? resultstar : resultnostar);
+                },
+
+
+                //      This function implements an ifnextchar macro.
+                IfnextcharFunction(parser, name) {
+                    let whichchar = parser.GetArgument(name);
+                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                        // $ syntax highlighting
+                        whichchar = String.fromCodePoint(parseInt(whichchar));
+                    }
+                    const resultnextchar = parser.GetArgument(name);
+                    const resultnotnextchar = parser.GetArgument(name);
+                    const gotchar = (parser.GetNext() === whichchar);
+                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                },
+
+
+                // This function implements an ifblank macro.
+                IfblankFunction(parser, name) {
+                    const blankarg = parser.GetArgument(name);
+                    const resultblank = parser.GetArgument(name);
+                    const resultnotblank = parser.GetArgument(name);
+                    const isblank = (blankarg.trim() == "");
+                    useArgument(parser, isblank ? resultblank : resultnotblank);
+                },
+
+
+                // This function implements an ifstrequal macro.
+                IfstrequalFunction(parser, name) {
+                    const strequalfirst = parser.GetArgument(name);
+                    const strequalsecond = parser.GetArgument(name);
+                    const resultequal = parser.GetArgument(name);
+                    const resultnotequal = parser.GetArgument(name);
+                    const isequal = (strequalfirst == strequalsecond);
+                    useArgument(parser, isequal ? resultequal : resultnotequal);
+                },
+
+
+                // This function implements a gsub macro.
+                GsubstituteFunction(parser, name) {
+                    const gsubfirst = parser.GetArgument(name);
+                    const gsubsecond = parser.GetArgument(name);
+                    const gsubthird = parser.GetArgument(name);
+                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                    useArgument(parser, gsubresult);
+                },
+
+
+                //      This function modifies the equation numbers.
+                SeteqnumberFunction(parser, name) {
+                        //   Get the macro parameters
+                        const star = parser.GetStar();                    // true if there is a *
+                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
+                        const newsubequations = parser.GetArgument(name);    // the subequations argument
+                        const neweqsection = parser.GetArgument(name);    // the eq section argument
+                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
+                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
+                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
+                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                }
+
+
+            });
+
+
+            //      Create the Lwarp-macros package
+            Configuration.create('Lwarp-macros', {
+                handler: {macro: ['Lwarp-macros']}
+            });
+
+
+            MathJax.startup.defaultReady();
+
+
+            // For forward references:
+            MathJax.startup.input[0].preFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        MathJax.config.subequations = math.inputData.recompile.subequations;
+                        MathJax.config.section = math.inputData.recompile.section;
+                }
+            });
+            MathJax.startup.input[0].postFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        math.inputData.recompile.subequations = MathJax.config.subequations;
+                        math.inputData.recompile.section = MathJax.config.section;
+                }
+            });
+
+
+                // For \left, \right with unicode-math:
+                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                const {Symbol} = MathJax._.input.tex.Symbol;
+                const {MapHandler} = MathJax._.input.tex.MapHandler;
+                const delimiter = MapHandler.getMap('delimiter');
+                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+        }        // ready
+    },          // startup
+
+
+    tex: {
+        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+        tags: "ams",
+                tagformat: {
+                        number: function (n) {
+                             if(MathJax.config.subequations==0)
+                                 return(MathJax.config.section + n);
+                             else
+                                 return(MathJax.config.section + String.fromCharCode(96+n));
+                        },
+                },
+    }
+}
+</script>
+
+
+<script
+        id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+></script>
+
+</head>
+<body>
+
+
+<a id="Manual-autopage-25"></a>
+<div class="pagegrid">
+
+
+<nav class="topnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+<div class="sidetoccontainer">
+
+
+<nav class="sidetoc">
+
+
+<div class="sidetoctitle">
+
+<p>
+<span class="sidetocthetitle">cl-freelock Manual</span>
+</p>
+
+<p>
+Contents
+</p>
+</div>
+
+
+<div class="sidetoccontents">
+
+<p>
+<a href="Manual.html" class="linkhome" >
+Home</a>
+</p>
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+</div>
+
+</nav>
+
+</div>
+
+
+<main class="bodycontainer">
+
+
+<section class="textbody">
+
+<h1>cl-freelock Manual</h1>
+
+<!--MathJax customizations:-->
+<div data-nosnippet
+    style="display:none"
+>
+
+\(\newcommand{\footnotename}{footnote}\)
+
+\(\def \LWRfootnote {1}\)
+
+\(\newcommand {\footnote }[2][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\newcommand {\footnotemark }[1][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\let \LWRorighspace \hspace \)
+
+\(\renewcommand {\hspace }{\ifstar \LWRorighspace \LWRorighspace }\)
+
+\(\newcommand {\TextOrMath }[2]{#2}\)
+
+\(\newcommand {\mathnormal }[1]{{#1}}\)
+
+\(\newcommand \ensuremath [1]{#1}\)
+
+\(\newcommand {\LWRframebox }[2][]{\fbox {#2}} \newcommand {\framebox }[1][]{\LWRframebox } \)
+
+\(\newcommand {\setlength }[2]{}\)
+
+\(\newcommand {\addtolength }[2]{}\)
+
+\(\newcommand {\setcounter }[2]{}\)
+
+\(\newcommand {\addtocounter }[2]{}\)
+
+\(\newcommand {\arabic }[1]{}\)
+
+\(\newcommand {\number }[1]{}\)
+
+\(\newcommand {\noalign }[1]{\text {#1}\notag \\}\)
+
+\(\newcommand {\cline }[1]{}\)
+
+\(\newcommand {\directlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\luatexdirectlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\protect }{}\)
+
+\(\def \LWRabsorbnumber #1 {}\)
+
+\(\def \LWRabsorbquotenumber &quot;#1 {}\)
+
+\(\newcommand {\LWRabsorboption }[1][]{}\)
+
+\(\newcommand {\LWRabsorbtwooptions }[1][]{\LWRabsorboption }\)
+
+\(\def \mathchar {\ifnextchar &quot;\LWRabsorbquotenumber \LWRabsorbnumber }\)
+
+\(\def \mathcode #1={\mathchar }\)
+
+\(\let \delcode \mathcode \)
+
+\(\let \delimiter \mathchar \)
+
+\(\def \oe {\unicode {x0153}}\)
+
+\(\def \OE {\unicode {x0152}}\)
+
+\(\def \ae {\unicode {x00E6}}\)
+
+\(\def \AE {\unicode {x00C6}}\)
+
+\(\def \aa {\unicode {x00E5}}\)
+
+\(\def \AA {\unicode {x00C5}}\)
+
+\(\def \o {\unicode {x00F8}}\)
+
+\(\def \O {\unicode {x00D8}}\)
+
+\(\def \l {\unicode {x0142}}\)
+
+\(\def \L {\unicode {x0141}}\)
+
+\(\def \ss {\unicode {x00DF}}\)
+
+\(\def \SS {\unicode {x1E9E}}\)
+
+\(\def \dag {\unicode {x2020}}\)
+
+\(\def \ddag {\unicode {x2021}}\)
+
+\(\def \P {\unicode {x00B6}}\)
+
+\(\def \copyright {\unicode {x00A9}}\)
+
+\(\def \pounds {\unicode {x00A3}}\)
+
+\(\let \LWRref \ref \)
+
+\(\renewcommand {\ref }{\ifstar \LWRref \LWRref }\)
+
+\( \newcommand {\multicolumn }[3]{#3}\)
+
+\(\require {textcomp}\)
+
+\(\newcommand {\intertext }[1]{\text {#1}\notag \\}\)
+
+\(\let \Hat \hat \)
+
+\(\let \Check \check \)
+
+\(\let \Tilde \tilde \)
+
+\(\let \Acute \acute \)
+
+\(\let \Grave \grave \)
+
+\(\let \Dot \dot \)
+
+\(\let \Ddot \ddot \)
+
+\(\let \Breve \breve \)
+
+\(\let \Bar \bar \)
+
+\(\let \Vec \vec \)
+
+\(\require {mathtools}\)
+
+\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
+
+\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
+
+\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
+
+\(\newcommand {\simcolon }{\sim \vcentcolon }\)
+
+\(\newcommand {\Simcolon }{\sim \dblcolon }\)
+
+\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
+
+\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
+
+\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
+
+\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
+
+\(\newenvironment {crampedsubarray}[1]{}{}\)
+
+\(\newcommand {\smashoperator }[2][]{#2\limits }\)
+
+\(\newcommand {\SwapAboveDisplaySkip }{}\)
+
+\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
+
+\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
+
+\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
+
+\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
+
+\(\let \xlongleftarrow \xleftarrow \)
+
+\(\let \xlongrightarrow \xrightarrow \)
+
+\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
+
+\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
+
+\(\let \LWRorigshoveleft \shoveleft \)
+
+\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
+
+\(\let \LWRorigshoveright \shoveright \)
+
+\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
+
+\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
+
+</div>
+
+<!--
+...... section API Reference ......
+-->
+<h4 id="autosec-26"><span class="sectionnumber">2&#x2003;</span>API Reference</h4>
+<a id="Manual-autopage-26"></a>
+<a id="Manual-autofile-2"></a>
+<!--
+...... subsection Atomic Operations ......
+-->
+<h5 id="autosec-27"><span class="sectionnumber">2.1&#x2003;</span>Atomic Operations</h5>
+<a id="Manual-autopage-27"></a>
+<!--
+...... subsubsection ATOMIC-REF ......
+-->
+<h6 id="autosec-28"><span class="sectionnumber">2.1.1&#x2003;</span>ATOMIC-REF</h6>
+<a id="Manual-autopage-28"></a>
+<!--
+...... subsubsection MAKE-ATOMIC-REF ......
+-->
+<h6 id="autosec-29"><span class="sectionnumber">2.1.2&#x2003;</span>MAKE-ATOMIC-REF</h6>
+<a id="Manual-autopage-29"></a>
+<!--
+...... subsubsection ATOMIC-REF-VALUE ......
+-->
+<h6 id="autosec-30"><span class="sectionnumber">2.1.3&#x2003;</span>ATOMIC-REF-VALUE</h6>
+<a id="Manual-autopage-30"></a>
+<!--
+...... subsubsection CAS ......
+-->
+<h6 id="autosec-31"><span class="sectionnumber">2.1.4&#x2003;</span>CAS</h6>
+<a id="Manual-autopage-31"></a>
+<!--
+...... subsubsection ATOMIC-INCF ......
+-->
+<h6 id="autosec-32"><span class="sectionnumber">2.1.5&#x2003;</span>ATOMIC-INCF</h6>
+<a id="Manual-autopage-32"></a>
+<!--
+...... subsubsection MEMORY-BARRIER ......
+-->
+<h6 id="autosec-33"><span class="sectionnumber">2.1.6&#x2003;</span>MEMORY-BARRIER</h6>
+<a id="Manual-autopage-33"></a>
+<!--
+...... subsection UMPMC Unbounded Queue ......
+-->
+<h5 id="autosec-34"><span class="sectionnumber">2.2&#x2003;</span>UMPMC Unbounded Queue</h5>
+<a id="Manual-autopage-34"></a>
+<!--
+...... subsubsection QUEUE ......
+-->
+<h6 id="autosec-35"><span class="sectionnumber">2.2.1&#x2003;</span>QUEUE</h6>
+<a id="Manual-autopage-35"></a>
+
+
+<p>
+Lock-free unbounded queue supporting multiple producers and consumers.
+</p>
+<!--
+...... subsubsection MAKE-QUEUE ......
+-->
+<h6 id="autosec-36"><span class="sectionnumber">2.2.2&#x2003;</span>MAKE-QUEUE</h6>
+<a id="Manual-autopage-36"></a>
+<!--
+...... subsubsection QUEUE-PUSH ......
+-->
+<h6 id="autosec-37"><span class="sectionnumber">2.2.3&#x2003;</span>QUEUE-PUSH</h6>
+<a id="Manual-autopage-37"></a>
+<!--
+...... subsubsection QUEUE-POP ......
+-->
+<h6 id="autosec-38"><span class="sectionnumber">2.2.4&#x2003;</span>QUEUE-POP</h6>
+<a id="Manual-autopage-38"></a>
+<!--
+...... subsubsection QUEUE-EMPTY-P ......
+-->
+<h6 id="autosec-39"><span class="sectionnumber">2.2.5&#x2003;</span>QUEUE-EMPTY-P</h6>
+<a id="Manual-autopage-39"></a>
+<!--
+...... subsection MPMC Bounded Queue ......
+-->
+<h5 id="autosec-40"><span class="sectionnumber">2.3&#x2003;</span>MPMC Bounded Queue</h5>
+<a id="Manual-autopage-40"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE ......
+-->
+<h6 id="autosec-41"><span class="sectionnumber">2.3.1&#x2003;</span>BOUNDED-QUEUE</h6>
+<a id="Manual-autopage-41"></a>
+<!--
+...... subsubsection MAKE-BOUNDED-QUEUE ......
+-->
+<h6 id="autosec-42"><span class="sectionnumber">2.3.2&#x2003;</span>MAKE-BOUNDED-QUEUE</h6>
+<a id="Manual-autopage-42"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-CAPACITY ......
+-->
+<h6 id="autosec-43"><span class="sectionnumber">2.3.3&#x2003;</span>BOUNDED-QUEUE-CAPACITY</h6>
+<a id="Manual-autopage-43"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-PUSH ......
+-->
+<h6 id="autosec-44"><span class="sectionnumber">2.3.4&#x2003;</span>BOUNDED-QUEUE-PUSH</h6>
+<a id="Manual-autopage-44"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-POP ......
+-->
+<h6 id="autosec-45"><span class="sectionnumber">2.3.5&#x2003;</span>BOUNDED-QUEUE-POP</h6>
+<a id="Manual-autopage-45"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-EMPTY-P ......
+-->
+<h6 id="autosec-46"><span class="sectionnumber">2.3.6&#x2003;</span>BOUNDED-QUEUE-EMPTY-P</h6>
+<a id="Manual-autopage-46"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-FULL-P ......
+-->
+<h6 id="autosec-47"><span class="sectionnumber">2.3.7&#x2003;</span>BOUNDED-QUEUE-FULL-P</h6>
+<a id="Manual-autopage-47"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-PUSH-BATCH ......
+-->
+<h6 id="autosec-48"><span class="sectionnumber">2.3.8&#x2003;</span>BOUNDED-QUEUE-PUSH-BATCH</h6>
+<a id="Manual-autopage-48"></a>
+<!--
+...... subsubsection BOUNDED-QUEUE-POP-BATCH ......
+-->
+<h6 id="autosec-49"><span class="sectionnumber">2.3.9&#x2003;</span>BOUNDED-QUEUE-POP-BATCH</h6>
+<a id="Manual-autopage-49"></a>
+<!--
+...... subsection SPSC Bounded Queue ......
+-->
+<h5 id="autosec-50"><span class="sectionnumber">2.4&#x2003;</span>SPSC Bounded Queue</h5>
+<a id="Manual-autopage-50"></a>
+<!--
+...... subsubsection SPSC-QUEUE ......
+-->
+<h6 id="autosec-51"><span class="sectionnumber">2.4.1&#x2003;</span>SPSC-QUEUE</h6>
+<a id="Manual-autopage-51"></a>
+<!--
+...... subsubsection MAKE-SPSC-QUEUE ......
+-->
+<h6 id="autosec-52"><span class="sectionnumber">2.4.2&#x2003;</span>MAKE-SPSC-QUEUE</h6>
+<a id="Manual-autopage-52"></a>
+<!--
+...... subsubsection SPSC-PUSH ......
+-->
+<h6 id="autosec-53"><span class="sectionnumber">2.4.3&#x2003;</span>SPSC-PUSH</h6>
+<a id="Manual-autopage-53"></a>
+<!--
+...... subsubsection SPSC-POP ......
+-->
+<h6 id="autosec-54"><span class="sectionnumber">2.4.4&#x2003;</span>SPSC-POP</h6>
+<a id="Manual-autopage-54"></a>
+
+
+</section>
+
+</main>
+
+
+<nav class="botnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+
+</div><!-- grid -->
+</body>
+</html>
+<!--|Start file|Performance-Guide.html|-->
+
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<meta name="generator" content="LaTeX Lwarp package" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>cl-freelock Manual - Performance Guide</title>
+<link rel="stylesheet" type="text/css" href="lwarp.css" />
+
+<script>
+// Lwarp MathJax emulation code
+//
+// Based on code by Davide P. Cervone.
+// Equation numbering: https://github.com/mathjax/MathJax/issues/2427
+// Starred and ifnextchar macros: https://github.com/mathjax/MathJax/issues/2428
+// \left, \right delimiters: https://github.com/mathjax/MathJax/issues/2535
+//
+// Modified by Brian Dunn to adjust equation numbering and add subequations.
+//
+// LaTeX can use \seteqnumber{subequations?}{section}{number} before each equation.
+// subequations? is 0 usually, 1 if inside subequations.
+// section is a string printed as-is, or empty.
+// number is auto-incremented by MathJax between equations.
+//
+MathJax = {
+    subequations: "0",
+    section: "",
+    loader: {
+        load: ['[tex]/tagformat', '[tex]/textmacros'],
+    },
+    startup: {
+        ready() {
+            //      These would be replaced by import commands if you wanted to make
+            //      a proper extension.
+            const Configuration = MathJax._.input.tex.Configuration.Configuration;
+            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+            const Macro = MathJax._.input.tex.Symbol.Macro;
+            const TexError = MathJax._.input.tex.TexError.default;
+            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+            const expandable = MathJax._.util.Options.expandable;
+
+
+            //      Insert the replacement string into the TeX string, and check
+            //      that there haven't been too many maxro substitutions (prevents
+            //      infinite loops).
+            const useArgument = (parser, text) => {
+                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                parser.i = 0;
+                if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                    throw new TexError('MaxMacroSub1',
+                    'MathJax maximum macro substitution count exceeded; ' +
+                    'is there a recursive macro call?');
+                }
+            }
+
+
+            //      Create the command map for:
+            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+            new CommandMap('Lwarp-macros', {
+                ifstar: 'IfstarFunction',
+                ifnextchar: 'IfnextcharFunction',
+                ifblank: 'IfblankFunction',
+                ifstrequal: 'IfstrequalFunction',
+                gsubstitute: 'GsubstituteFunction',
+                seteqnumber: 'SeteqnumberFunction'
+            }, {
+                //      This function implements an ifstar macro.
+                IfstarFunction(parser, name) {
+                    const resultstar = parser.GetArgument(name);
+                    const resultnostar = parser.GetArgument(name);
+                    const star = parser.GetStar();                      // true if there is a *
+                    useArgument(parser, star ? resultstar : resultnostar);
+                },
+
+
+                //      This function implements an ifnextchar macro.
+                IfnextcharFunction(parser, name) {
+                    let whichchar = parser.GetArgument(name);
+                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                        // $ syntax highlighting
+                        whichchar = String.fromCodePoint(parseInt(whichchar));
+                    }
+                    const resultnextchar = parser.GetArgument(name);
+                    const resultnotnextchar = parser.GetArgument(name);
+                    const gotchar = (parser.GetNext() === whichchar);
+                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                },
+
+
+                // This function implements an ifblank macro.
+                IfblankFunction(parser, name) {
+                    const blankarg = parser.GetArgument(name);
+                    const resultblank = parser.GetArgument(name);
+                    const resultnotblank = parser.GetArgument(name);
+                    const isblank = (blankarg.trim() == "");
+                    useArgument(parser, isblank ? resultblank : resultnotblank);
+                },
+
+
+                // This function implements an ifstrequal macro.
+                IfstrequalFunction(parser, name) {
+                    const strequalfirst = parser.GetArgument(name);
+                    const strequalsecond = parser.GetArgument(name);
+                    const resultequal = parser.GetArgument(name);
+                    const resultnotequal = parser.GetArgument(name);
+                    const isequal = (strequalfirst == strequalsecond);
+                    useArgument(parser, isequal ? resultequal : resultnotequal);
+                },
+
+
+                // This function implements a gsub macro.
+                GsubstituteFunction(parser, name) {
+                    const gsubfirst = parser.GetArgument(name);
+                    const gsubsecond = parser.GetArgument(name);
+                    const gsubthird = parser.GetArgument(name);
+                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                    useArgument(parser, gsubresult);
+                },
+
+
+                //      This function modifies the equation numbers.
+                SeteqnumberFunction(parser, name) {
+                        //   Get the macro parameters
+                        const star = parser.GetStar();                    // true if there is a *
+                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
+                        const newsubequations = parser.GetArgument(name);    // the subequations argument
+                        const neweqsection = parser.GetArgument(name);    // the eq section argument
+                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
+                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
+                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
+                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                }
+
+
+            });
+
+
+            //      Create the Lwarp-macros package
+            Configuration.create('Lwarp-macros', {
+                handler: {macro: ['Lwarp-macros']}
+            });
+
+
+            MathJax.startup.defaultReady();
+
+
+            // For forward references:
+            MathJax.startup.input[0].preFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        MathJax.config.subequations = math.inputData.recompile.subequations;
+                        MathJax.config.section = math.inputData.recompile.section;
+                }
+            });
+            MathJax.startup.input[0].postFilters.add(({math}) => {
+                if (math.inputData.recompile){
+                        math.inputData.recompile.subequations = MathJax.config.subequations;
+                        math.inputData.recompile.section = MathJax.config.section;
+                }
+            });
+
+
+                // For \left, \right with unicode-math:
+                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                const {Symbol} = MathJax._.input.tex.Symbol;
+                const {MapHandler} = MathJax._.input.tex.MapHandler;
+                const delimiter = MapHandler.getMap('delimiter');
+                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+        }        // ready
+    },          // startup
+
+
+    tex: {
+        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+        tags: "ams",
+                tagformat: {
+                        number: function (n) {
+                             if(MathJax.config.subequations==0)
+                                 return(MathJax.config.section + n);
+                             else
+                                 return(MathJax.config.section + String.fromCharCode(96+n));
+                        },
+                },
+    }
+}
+</script>
+
+
+<script
+        id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+></script>
+
+</head>
+<body>
+
+
+<a id="Manual-autopage-55"></a>
+<div class="pagegrid">
+
+
+<nav class="topnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+<div class="sidetoccontainer">
+
+
+<nav class="sidetoc">
+
+
+<div class="sidetoctitle">
+
+<p>
+<span class="sidetocthetitle">cl-freelock Manual</span>
+</p>
+
+<p>
+Contents
+</p>
+</div>
+
+
+<div class="sidetoccontents">
+
+<p>
+<a href="Manual.html" class="linkhome" >
+Home</a>
+</p>
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+</div>
+
+</nav>
+
+</div>
+
+
+<main class="bodycontainer">
+
+
+<section class="textbody">
+
+<h1>cl-freelock Manual</h1>
+
+<!--MathJax customizations:-->
+<div data-nosnippet
+    style="display:none"
+>
+
+\(\newcommand{\footnotename}{footnote}\)
+
+\(\def \LWRfootnote {1}\)
+
+\(\newcommand {\footnote }[2][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\newcommand {\footnotemark }[1][\LWRfootnote ]{{}^{\mathrm {#1}}}\)
+
+\(\let \LWRorighspace \hspace \)
+
+\(\renewcommand {\hspace }{\ifstar \LWRorighspace \LWRorighspace }\)
+
+\(\newcommand {\TextOrMath }[2]{#2}\)
+
+\(\newcommand {\mathnormal }[1]{{#1}}\)
+
+\(\newcommand \ensuremath [1]{#1}\)
+
+\(\newcommand {\LWRframebox }[2][]{\fbox {#2}} \newcommand {\framebox }[1][]{\LWRframebox } \)
+
+\(\newcommand {\setlength }[2]{}\)
+
+\(\newcommand {\addtolength }[2]{}\)
+
+\(\newcommand {\setcounter }[2]{}\)
+
+\(\newcommand {\addtocounter }[2]{}\)
+
+\(\newcommand {\arabic }[1]{}\)
+
+\(\newcommand {\number }[1]{}\)
+
+\(\newcommand {\noalign }[1]{\text {#1}\notag \\}\)
+
+\(\newcommand {\cline }[1]{}\)
+
+\(\newcommand {\directlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\luatexdirectlua }[1]{\text {(directlua)}}\)
+
+\(\newcommand {\protect }{}\)
+
+\(\def \LWRabsorbnumber #1 {}\)
+
+\(\def \LWRabsorbquotenumber &quot;#1 {}\)
+
+\(\newcommand {\LWRabsorboption }[1][]{}\)
+
+\(\newcommand {\LWRabsorbtwooptions }[1][]{\LWRabsorboption }\)
+
+\(\def \mathchar {\ifnextchar &quot;\LWRabsorbquotenumber \LWRabsorbnumber }\)
+
+\(\def \mathcode #1={\mathchar }\)
+
+\(\let \delcode \mathcode \)
+
+\(\let \delimiter \mathchar \)
+
+\(\def \oe {\unicode {x0153}}\)
+
+\(\def \OE {\unicode {x0152}}\)
+
+\(\def \ae {\unicode {x00E6}}\)
+
+\(\def \AE {\unicode {x00C6}}\)
+
+\(\def \aa {\unicode {x00E5}}\)
+
+\(\def \AA {\unicode {x00C5}}\)
+
+\(\def \o {\unicode {x00F8}}\)
+
+\(\def \O {\unicode {x00D8}}\)
+
+\(\def \l {\unicode {x0142}}\)
+
+\(\def \L {\unicode {x0141}}\)
+
+\(\def \ss {\unicode {x00DF}}\)
+
+\(\def \SS {\unicode {x1E9E}}\)
+
+\(\def \dag {\unicode {x2020}}\)
+
+\(\def \ddag {\unicode {x2021}}\)
+
+\(\def \P {\unicode {x00B6}}\)
+
+\(\def \copyright {\unicode {x00A9}}\)
+
+\(\def \pounds {\unicode {x00A3}}\)
+
+\(\let \LWRref \ref \)
+
+\(\renewcommand {\ref }{\ifstar \LWRref \LWRref }\)
+
+\( \newcommand {\multicolumn }[3]{#3}\)
+
+\(\require {textcomp}\)
+
+\(\newcommand {\intertext }[1]{\text {#1}\notag \\}\)
+
+\(\let \Hat \hat \)
+
+\(\let \Check \check \)
+
+\(\let \Tilde \tilde \)
+
+\(\let \Acute \acute \)
+
+\(\let \Grave \grave \)
+
+\(\let \Dot \dot \)
+
+\(\let \Ddot \ddot \)
+
+\(\let \Breve \breve \)
+
+\(\let \Bar \bar \)
+
+\(\let \Vec \vec \)
+
+\(\require {mathtools}\)
+
+\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
+
+\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
+
+\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
+
+\(\newcommand {\simcolon }{\sim \vcentcolon }\)
+
+\(\newcommand {\Simcolon }{\sim \dblcolon }\)
+
+\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
+
+\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
+
+\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
+
+\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
+
+\(\newenvironment {crampedsubarray}[1]{}{}\)
+
+\(\newcommand {\smashoperator }[2][]{#2\limits }\)
+
+\(\newcommand {\SwapAboveDisplaySkip }{}\)
+
+\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
+
+\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
+
+\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
+
+\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
+
+\(\let \xlongleftarrow \xleftarrow \)
+
+\(\let \xlongrightarrow \xrightarrow \)
+
+\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
+
+\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
+
+\(\let \LWRorigshoveleft \shoveleft \)
+
+\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
+
+\(\let \LWRorigshoveright \shoveright \)
+
+\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
+
+\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
+
+</div>
+
+<!--
+...... section Performance Guide ......
+-->
+<h4 id="autosec-56"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
+<a id="Manual-autopage-56"></a>
+<a id="Manual-autofile-3"></a>
+
+<p>
+Tips and guidelines for optimal performance with CL-FREELOCK.
+</p>
+<!--
+...... subsection General Performance Principles ......
+-->
+<h5 id="autosec-57"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
+<a id="Manual-autopage-57"></a>
+<!--
+...... subsubsection Choose the Right Data Structure ......
+-->
+<h6 id="autosec-58"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
+<a id="Manual-autopage-58"></a>
+<!--
+...... subsubsection Capacity Selection ......
+-->
+<h6 id="autosec-59"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
+<a id="Manual-autopage-59"></a>
+<!--
+...... subsubsection Thread Contention ......
+-->
+<h6 id="autosec-60"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
+<a id="Manual-autopage-60"></a>
+<!--
+...... subsection Optimization Techniques ......
+-->
+<h5 id="autosec-61"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
+<a id="Manual-autopage-61"></a>
+<!--
+...... subsubsection Batch Operations ......
+-->
+<h6 id="autosec-62"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
+<a id="Manual-autopage-62"></a>
+<!--
+...... subsubsection Avoid Busy Waiting ......
+-->
+<h6 id="autosec-63"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
+<a id="Manual-autopage-63"></a>
+<!--
+...... subsubsection Memory Allocation ......
+-->
+<h6 id="autosec-64"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
+<a id="Manual-autopage-64"></a>
+<!--
+...... subsection Implementation-Specific Notes ......
+-->
+<h5 id="autosec-65"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
+<a id="Manual-autopage-65"></a>
+<!--
+...... subsubsection SBCL ......
+-->
+<h6 id="autosec-66"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
+<a id="Manual-autopage-66"></a>
+<!--
+...... subsubsection CLASP ......
+-->
+<h6 id="autosec-67"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
+<a id="Manual-autopage-67"></a>
+<!--
+...... subsection Common Pitfalls ......
+-->
+<h5 id="autosec-68"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
+<a id="Manual-autopage-68"></a>
+<!--
+...... subsubsection Wrong capacity ......
+-->
+<h6 id="autosec-69"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
+<a id="Manual-autopage-69"></a>
+<!--
+...... subsubsection Thread safety ......
+-->
+<h6 id="autosec-70"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
+<a id="Manual-autopage-70"></a>
+<!--
+...... subsubsection Busy waitings ......
+-->
+<h6 id="autosec-71"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
+<a id="Manual-autopage-71"></a>
+<!--
+...... subsubsection Memory leaks ......
+-->
+<h6 id="autosec-72"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
+<a id="Manual-autopage-72"></a>
+<!--
+...... subsubsection False sharing ......
+-->
+<h6 id="autosec-73"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
+<a id="Manual-autopage-73"></a>
+<!--
+...... subsection Recommended Patterns ......
+-->
+<h5 id="autosec-74"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
+<a id="Manual-autopage-74"></a>
+<!--
+...... subsubsection Producer-Consumer Pool ......
+-->
+<h6 id="autosec-75"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
+<a id="Manual-autopage-75"></a>
+<!--
+...... subsubsection Basic Producer-Consumer ......
+-->
+<h6 id="autosec-76"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
+<a id="Manual-autopage-76"></a>
+<!--
+...... subsubsection Bounded Buffer with Batch Processing ......
+-->
+<h6 id="autosec-77"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
+<a id="Manual-autopage-77"></a>
+<!--
+...... subsubsection SPSC Pipeline ......
+-->
+<h6 id="autosec-78"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
+<a id="Manual-autopage-78"></a>
+<!--
+...... subsubsection Load Balancing with Multiple Queues ......
+-->
+<h6 id="autosec-79"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
+<a id="Manual-autopage-79"></a>
+<!--
+...... subsubsection Web Server Request Queue ......
+-->
+<h6 id="autosec-80"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
+<a id="Manual-autopage-80"></a>
+<!--
+...... subsubsection Atomic Counter Service ......
+-->
+<h6 id="autosec-81"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
+<a id="Manual-autopage-81"></a>
+<!--
+...... subsubsection Event Processing Pipeline ......
+-->
+<h6 id="autosec-82"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
+<a id="Manual-autopage-82"></a>
+<!--
+...... subsubsection Memory Pool with Lock-Free Allocation ......
+-->
+<h6 id="autosec-83"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
+<a id="Manual-autopage-83"></a>
+
+
+<a id="Manual-autofile-last"></a>
+</section>
+
+</main>
+
+
+<nav class="botnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+
+</div><!-- grid -->
+</body>
+</html>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.querySelectorAll("pre.programlisting").forEach(el => {
+  const rawText = el.textContent;
+  const code = document.createElement("code");
+  // Default to Lisp, only use Bash for actual terminal commands
+  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+  code.textContent = rawText;
+  el.innerHTML = "";
+  el.appendChild(code);
+  hljs.highlightElement(code);
+});
+</script>

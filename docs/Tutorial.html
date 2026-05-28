@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual</title>
+<title>cl-freelock Manual - Tutorial</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -232,7 +233,60 @@ MathJax = {
 <body>
 
 
-<div class="homepagegrid">
+<a id="Manual-autopage-4"></a>
+<div class="pagegrid">
+
+
+<nav class="topnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
+<div class="sidetoccontainer">
+
+
+<nav class="sidetoc">
+
+
+<div class="sidetoctitle">
+
+<p>
+<span class="sidetocthetitle">cl-freelock Manual</span>
+</p>
+
+<p>
+Contents
+</p>
+</div>
+
+
+<div class="sidetoccontents">
+
+<p>
+<a href="Manual.html" class="linkhome" >
+Home</a>
+</p>
+
+<p>
+<a href="Tutorial.html#autosec-5" class="tocsection" >
+<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
+</p>
+
+
+<p>
+<a href="API-Reference.html#autosec-26" class="tocsection" >
+<span class="sectionnumber">2</span>&#x2003;API Reference</a>
+</p>
+
+
+<p>
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
+<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
+</p>
+
+
+</div>
+
+</nav>
+
+</div>
 
 
 <main class="bodycontainer">
@@ -240,7 +294,7 @@ MathJax = {
 
 <section class="textbody">
 
-<a id="Manual-autofile-0"></a>
+<h1>cl-freelock Manual</h1>
 
 <!--MathJax customizations:-->
 <div data-nosnippet
@@ -423,430 +477,356 @@ MathJax = {
 
 </div>
 
-<a id="Manual-autopage-1"></a>
-<div class="titlepage">
+<!--
+...... section Tutorial ......
+-->
+<h4 id="autosec-5"><span class="sectionnumber">1&#x2003;</span>Tutorial</h4>
+<a id="Manual-autopage-5"></a>
+<a id="Manual-autofile-1"></a>
+<!--
+...... subsection Getting Started: Installation ......
+-->
+<h5 id="autosec-6"><span class="sectionnumber">1.1&#x2003;</span>Getting Started: Installation</h5>
+<a id="Manual-autopage-6"></a>
 
-<h1>cl-freelock Manual</h1>
-
-
-<div class="author">
-
-
-<div class="oneauthor">
 
 <p>
-Andrew D. France
+Once available on quicklisp, you will be able to simply run:
 </p>
-</div>
+<div class="figurecaption">
 
 </div>
+<pre class="programlisting">
+(ql:quickload :cl-freelock)
+</pre>
 
-
-<div class="titledate">
+    <div class="figurecaption">
+</div>
 
 <p>
-Last edited: 2026-05-28T01:05:55-05:00 UTC
+For now, clone the repository into your Quicklisp local-projects directory:
 </p>
+<div class="figurecaption">
+
 </div>
+<pre class="programlisting">
+cd ~/quicklisp/local-projects/
+git clone https://github.com/ItsMeForLua/cl-freelock.git
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+Then, load the system in your REPL:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(ql:quickload :cl-freelock)
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection Basic Usage ......
+-->
+<h5 id="autosec-10"><span class="sectionnumber">1.2&#x2003;</span>Basic Usage</h5>
+<a id="Manual-autopage-10"></a>
+
+
+<p>
+In this section, we will go over the basic usage of producer-consumer with unbounded queue, bounded buffers, SPSC, error handling, and atomic operations.
+</p>
+<!--
+...... subsubsection FYI ......
+-->
+<h6 id="autosec-11">FYI</h6>
+<a id="Manual-autopage-11"></a>
+
+
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>fl</span> when calling its functions.
+</p>
+<p>
+<span style="width:20pt; display:inline-block"><!----></span>For example: <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(fl:queue-push *work-queue* i)</span>
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> The API reference for cl-freelock is mostly written with SBCL in-mind. However, the differences between implementations regarding the code presented in this documentation will be quite
+minor.
+</p>
+</li>
+</ul>
+<!--
+...... subsubsection MPMC Unbounded Queue (Michael-Scott) ......
+-->
+<h6 id="autosec-12"><span class="sectionnumber">1.2.1&#x2003;</span>MPMC Unbounded Queue (Michael-Scott)</h6>
+<a id="Manual-autopage-12"></a>
+
+
+<p>
+The algorithm used for unbounded queues is based off of the Michael-Scott algorithm. We specifically use Compare-And-Swap (CAS) operations to link nodes and swing the head and tail pointers.
+</p>
+
+<p>
+We identify three main reasons one would use this particular queue type:
+</p>
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> When the workload is highly variable in predictability, such that you cannot guarantee a maximum capacity for your queue ahead of time.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> You have a thread pool architecture with multiple producer threads that are throwing jobs onto the queue, and multiple worker threads are simultaneously pulling jobs off. i.e., An N-to-N
+architecture.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">3.</span> If your project requires immunity from deadlocks.
+</p>
+</li>
+</ul>
+<!--
+...... subsubsection Producers ......
+-->
+<h6 id="autosec-13">Producers</h6>
+<a id="Manual-autopage-13"></a>
+
+
+<p>
+A producer thread works by calling <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(queue-push *work-queue* item)</span>. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defun producer ()
+(loop for i from 1 to 1000 do
+(fl:queue-push *work-queue* i)
+(sleep 0.001)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+
+<p>
+n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if
+you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-14"></a><sup>,</sup> <sup>2</sup>
+</p>
+<div role="note" class="footnotes">
+
+<a id="Manual-autopage-15"></a>
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+</p>
+
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state – hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
+would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
+</p>
+
 
 </div>
 <!--
-...... section Contents ......
+...... subsubsection Consumers ......
 -->
-<h4 id="autosec-3">Contents</h4>
-<a id="Manual-autopage-3"></a>
+<h6 id="autosec-16">Consumers</h6>
+<a id="Manual-autopage-16"></a>
 
 
-
-<nav class="toc">
-
-<p>
-<a href="Tutorial.html#autosec-5" class="tocsection" >
-<span class="sectionnumber">1</span>&#x2003;Tutorial</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-6" class="tocsubsection" >
-<span class="sectionnumber">1.1</span>&#x2003;Getting Started: Installation</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-10" class="tocsubsection" >
-<span class="sectionnumber">1.2</span>&#x2003;Basic Usage</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-12" class="tocsubsubsection" >
-<span class="sectionnumber">1.2.1</span>&#x2003;MPMC Unbounded Queue (Michael-Scott)</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-19" class="tocsubsection" >
-<span class="sectionnumber">1.3</span>&#x2003;MPMC Bounded Queue (Vyukov)</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-21" class="tocsubsection" >
-<span class="sectionnumber">1.4</span>&#x2003;SPSC Bounded Queue</a>
-</p>
-
-
-<p>
-<a href="Tutorial.html#autosec-23" class="tocsubsection" >
-<span class="sectionnumber">1.5</span>&#x2003;Error Handling</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-26" class="tocsection" >
-<span class="sectionnumber">2</span>&#x2003;API Reference</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-27" class="tocsubsection" >
-<span class="sectionnumber">2.1</span>&#x2003;Atomic Operations</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-28" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.1</span>&#x2003;ATOMIC-REF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-29" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.2</span>&#x2003;MAKE-ATOMIC-REF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-30" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.3</span>&#x2003;ATOMIC-REF-VALUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-31" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.4</span>&#x2003;CAS</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-32" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.5</span>&#x2003;ATOMIC-INCF</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-33" class="tocsubsubsection" >
-<span class="sectionnumber">2.1.6</span>&#x2003;MEMORY-BARRIER</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-34" class="tocsubsection" >
-<span class="sectionnumber">2.2</span>&#x2003;UMPMC Unbounded Queue</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-35" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.1</span>&#x2003;QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-36" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.2</span>&#x2003;MAKE-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-37" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.3</span>&#x2003;QUEUE-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-38" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.4</span>&#x2003;QUEUE-POP</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-39" class="tocsubsubsection" >
-<span class="sectionnumber">2.2.5</span>&#x2003;QUEUE-EMPTY-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-40" class="tocsubsection" >
-<span class="sectionnumber">2.3</span>&#x2003;MPMC Bounded Queue</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.1</span>&#x2003;BOUNDED-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.2</span>&#x2003;MAKE-BOUNDED-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.3</span>&#x2003;BOUNDED-QUEUE-CAPACITY</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.4</span>&#x2003;BOUNDED-QUEUE-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.5</span>&#x2003;BOUNDED-QUEUE-POP</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-46" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.6</span>&#x2003;BOUNDED-QUEUE-EMPTY-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.7</span>&#x2003;BOUNDED-QUEUE-FULL-P</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.8</span>&#x2003;BOUNDED-QUEUE-PUSH-BATCH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-49" class="tocsubsubsection" >
-<span class="sectionnumber">2.3.9</span>&#x2003;BOUNDED-QUEUE-POP-BATCH</a>
-</p>
-
-
 <p>
-<a href="API-Reference.html#autosec-50" class="tocsubsection" >
-<span class="sectionnumber">2.4</span>&#x2003;SPSC Bounded Queue</a>
+A consumer thread works by calling <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>(queue-pop *work-queue*)</span>. This procedure does not return lisp conditions; instead, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>queue-pop</span> returns two specific values:
 </p>
+<ul class="enumerate" style="list-style-type:none">
 
-
-<p>
-<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.1</span>&#x2003;SPSC-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-52" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.2</span>&#x2003;MAKE-SPSC-QUEUE</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.3</span>&#x2003;SPSC-PUSH</a>
-</p>
-
-
-<p>
-<a href="API-Reference.html#autosec-54" class="tocsubsubsection" >
-<span class="sectionnumber">2.4.4</span>&#x2003;SPSC-POP</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-56" class="tocsection" >
-<span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-57" class="tocsubsection" >
-<span class="sectionnumber">3.1</span>&#x2003;General Performance Principles</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-58" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.1</span>&#x2003;Choose the Right Data Structure</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-59" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.2</span>&#x2003;Capacity Selection</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-60" class="tocsubsubsection" >
-<span class="sectionnumber">3.1.3</span>&#x2003;Thread Contention</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-61" class="tocsubsection" >
-<span class="sectionnumber">3.2</span>&#x2003;Optimization Techniques</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-62" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.1</span>&#x2003;Batch Operations</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-63" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.2</span>&#x2003;Avoid Busy Waiting</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-64" class="tocsubsubsection" >
-<span class="sectionnumber">3.2.3</span>&#x2003;Memory Allocation</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-65" class="tocsubsection" >
-<span class="sectionnumber">3.3</span>&#x2003;Implementation-Specific Notes</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-66" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.1</span>&#x2003;SBCL</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-67" class="tocsubsubsection" >
-<span class="sectionnumber">3.3.2</span>&#x2003;CLASP</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-68" class="tocsubsection" >
-<span class="sectionnumber">3.4</span>&#x2003;Common Pitfalls</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-69" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.1</span>&#x2003;Wrong capacity</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-70" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.2</span>&#x2003;Thread safety</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-71" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.3</span>&#x2003;Busy waitings</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-72" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.4</span>&#x2003;Memory leaks</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-73" class="tocsubsubsection" >
-<span class="sectionnumber">3.4.5</span>&#x2003;False sharing</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-74" class="tocsubsection" >
-<span class="sectionnumber">3.5</span>&#x2003;Recommended Patterns</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-75" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.1</span>&#x2003;Producer-Consumer Pool</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-76" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.2</span>&#x2003;Basic Producer-Consumer</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-77" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.3</span>&#x2003;Bounded Buffer with Batch Processing</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-78" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.4</span>&#x2003;SPSC Pipeline</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-79" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.5</span>&#x2003;Load Balancing with Multiple Queues</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-80" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.6</span>&#x2003;Web Server Request Queue</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-81" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.7</span>&#x2003;Atomic Counter Service</a>
-</p>
-
-
-<p>
-<a href="Performance-Guide.html#autosec-82" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.8</span>&#x2003;Event Processing Pipeline</a>
-</p>
-
-
+<li>
 <p>
-<a href="Performance-Guide.html#autosec-83" class="tocsubsubsection" >
-<span class="sectionnumber">3.5.9</span>&#x2003;Memory Pool with Lock-Free Allocation</a>
-</p>
-</nav>
+<span class="listmarker">1.</span> The <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>item</span> itself or <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>NIL</span> if empty.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> A <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>success</span> boolean, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>T</span> if an item was grabbed, <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>NIL</span> if the queue was empty.
+</p>
+</li>
+</ul>
+
+<p>
+n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
+</p>
+
+<p>
+You must wrap the procedure in a <span
+     class="colorbox"
+     style="background:#ECECEC ; padding:2pt"
+>multiple-value-bind</span> to check if the pop was successful.
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *work-queue* (make-queue))
+;; Producer thread
+(defun producer ()
+(loop for i from 1 to 1000 do
+(queue-push *work-queue* i)
+(sleep 0.001)))
+
+;; Consumer thread
+(defun consumer ()
+(loop
+(multiple-value-bind (item found)
+(queue-pop *work-queue*)
+(if found
+(format t "Processing: ~A~&percnt;" item)
+(sleep 0.001)))))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<div role="note" class="footnotes">
+
+<a id="Manual-autopage-18"></a>
+<p>
+<span
+     class="makebox"
+     style="display:inline-block ; width:23pt ; text-align:right ; "
+>3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue – consequently, this tanks a systems performance.
+</p>
+
+
+</div>
+<!--
+...... subsection MPMC Bounded Queue (Vyukov) ......
+-->
+<h5 id="autosec-19"><span class="sectionnumber">1.3&#x2003;</span>MPMC Bounded Queue (Vyukov)</h5>
+<a id="Manual-autopage-19"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *buffer* (make-bounded-queue 64))   ; Must be power of 2
+
+;; Non-blocking operations
+(when (bounded-queue-push *buffer* "data")
+(format t "Push succeeded~&percnt;"))
+
+(multiple-value-bind (value success)
+(bounded-queue-pop *buffer*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection SPSC Bounded Queue ......
+-->
+<h5 id="autosec-21"><span class="sectionnumber">1.4&#x2003;</span>SPSC Bounded Queue</h5>
+<a id="Manual-autopage-21"></a>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+(defparameter *spsc* (make-spsc-queue 256))   ; Must be power of 2
+;; Producer thread only
+(when (spsc-push *spsc* "fast-data")
+(format t "Pushed successfully~&percnt;"))
+;; Consumer thread only
+(multiple-value-bind (value success)
+(spsc-pop *spsc*)
+(when success
+(format t "Got: ~A~&percnt;" value)))
+</pre>
+
+    <div class="figurecaption">
+</div>
+<!--
+...... subsection Error Handling ......
+-->
+<h5 id="autosec-23"><span class="sectionnumber">1.5&#x2003;</span>Error Handling</h5>
+<a id="Manual-autopage-23"></a>
+
+
+<p>
+Operations return multiple values to indicate success/failure rather than signaling conditions:
+</p>
+<div class="figurecaption">
+
+</div>
+<pre class="programlisting">
+;; Always check the second return value
+(multiple-value-bind (value success)
+(queue-pop *queue*)
+(if success
+(process value)
+(handle-empty-queue)))
+</pre>
+
+    <div class="figurecaption">
+</div>
 
 </section>
 
 </main>
+
+
+<nav class="botnavigation"><a href="Manual.html" class="linkhome" >
+Home</a></nav>
 
 </div><!-- grid -->
 </body>

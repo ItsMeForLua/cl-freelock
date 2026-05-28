@@ -64,10 +64,9 @@ docs:
 	@echo "Building docs/ directory..."
 	@mkdir -p docs
 	@cp "tex/$(FILE).html" docs/index.html
-	@# 1. Copy manual core support files
+	@cp tex/*.html docs/ 2>/dev/null || true
 	@cp tex/lwarp.css tex/lwarp_formal.css tex/lwarp_sagebrush.css tex/lwarp_mathjax.txt docs/ 2>/dev/null || true
-	@# 2. Dynamically discover and copy local assets referenced in the HTML
-	@grep -oE '(href|src)="[^"]+"' "tex/$(FILE).html" | \
+	@grep -oE '(href|src)="[^"]+"' tex/*.html | \
 		sed -n 's/.*="\([^/:][^"]*\)".*/\1/p' | \
 		sort -u | \
 		while read -r file; do \
@@ -87,24 +86,26 @@ lwarpmk:
 	@echo "Injecting custom structural CSS into lwarp.css..."
 	@echo "/* --- CUSTOM CODE BLOCK STRUCTURE --- */" >> tex/lwarp.css
 	@echo "pre.programlisting { background-color: #f0f0f0; border: 1.5pt solid black; padding: 10px; margin-bottom: 1.5em; overflow-x: auto; white-space: pre-wrap; font-family: monospace; }" >> tex/lwarp.css
-	@echo "Injecting Highlight.js..."
-	@echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">' >> "tex/$(FILE).html"
-	@echo '<style>.hljs { background: transparent !important; padding: 0 !important; }</style>' >> "tex/$(FILE).html"
-	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>' >> "tex/$(FILE).html"
-	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>' >> "tex/$(FILE).html"
-	@echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>' >> "tex/$(FILE).html"
-	@echo '<script>' >> "tex/$(FILE).html"
-	@echo 'document.querySelectorAll("pre.programlisting").forEach(el => {' >> "tex/$(FILE).html"
-	@echo '  const rawText = el.textContent;' >> "tex/$(FILE).html"
-	@echo '  const code = document.createElement("code");' >> "tex/$(FILE).html"
-	@echo '  // Default to Lisp, only use Bash for actual terminal commands' >> "tex/$(FILE).html"
-	@echo '  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";' >> "tex/$(FILE).html"
-	@echo '  code.textContent = rawText;' >> "tex/$(FILE).html"
-	@echo '  el.innerHTML = "";' >> "tex/$(FILE).html"
-	@echo '  el.appendChild(code);' >> "tex/$(FILE).html"
-	@echo '  hljs.highlightElement(code);' >> "tex/$(FILE).html"
-	@echo '});' >> "tex/$(FILE).html"
-	@echo '</script>' >> "tex/$(FILE).html"
+	@echo "Injecting Highlight.js into all HTML files..."
+	@for html_file in tex/*.html; do \
+		echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">' >> "$$html_file"; \
+		echo '<style>.hljs { background: transparent !important; padding: 0 !important; }</style>' >> "$$html_file"; \
+		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>' >> "$$html_file"; \
+		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>' >> "$$html_file"; \
+		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>' >> "$$html_file"; \
+		echo '<script>' >> "$$html_file"; \
+		echo 'document.querySelectorAll("pre.programlisting").forEach(el => {' >> "$$html_file"; \
+		echo '  const rawText = el.textContent;' >> "$$html_file"; \
+		echo '  const code = document.createElement("code");' >> "$$html_file"; \
+		echo '  // Default to Lisp, only use Bash for actual terminal commands' >> "$$html_file"; \
+		echo '  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";' >> "$$html_file"; \
+		echo '  code.textContent = rawText;' >> "$$html_file"; \
+		echo '  el.innerHTML = "";' >> "$$html_file"; \
+		echo '  el.appendChild(code);' >> "$$html_file"; \
+		echo '  hljs.highlightElement(code);' >> "$$html_file"; \
+		echo '});' >> "$$html_file"; \
+		echo '</script>' >> "$$html_file"; \
+	done
 
 limages:
 	@echo "Running lwarpmk limages for $(FILE)..."
