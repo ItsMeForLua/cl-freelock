@@ -5,7 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual - Tutorial</title>
+<title>cl-freelock Manual — Tutorial</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -27,208 +27,227 @@ MathJax = {
     subequations: "0",
     section: "",
     loader: {
-        load: ['[tex]/tagformat', '[tex]/textmacros'],
+         load: ['[tex]/tagformat', '[tex]/textmacros'],
     },
     startup: {
-        ready() {
-            //      These would be replaced by import commands if you wanted to make
-            //      a proper extension.
-            const Configuration = MathJax._.input.tex.Configuration.Configuration;
-            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
-            const Macro = MathJax._.input.tex.Symbol.Macro;
-            const TexError = MathJax._.input.tex.TexError.default;
-            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
-            const expandable = MathJax._.util.Options.expandable;
+         ready() {
+             //       These would be replaced by import commands if you wanted to make
+             //       a proper extension.
+             const Configuration = MathJax._.input.tex.Configuration.Configuration;
+             const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+             const Macro = MathJax._.input.tex.Symbol.Macro;
+             const TexError = MathJax._.input.tex.TexError.default;
+             const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+             const expandable = MathJax._.util.Options.expandable;
 
 
-            //      Insert the replacement string into the TeX string, and check
-            //      that there haven't been too many maxro substitutions (prevents
-            //      infinite loops).
-            const useArgument = (parser, text) => {
-                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
-                parser.i = 0;
-                if (++parser.macroCount > parser.configuration.options.maxMacros) {
-                    throw new TexError('MaxMacroSub1',
-                    'MathJax maximum macro substitution count exceeded; ' +
-                    'is there a recursive macro call?');
-                }
-            }
+             //       Insert the replacement string into the TeX string, and check
+             //       that there haven't been too many maxro substitutions (prevents
+             //       infinite loops).
+             const useArgument = (parser, text) => {
+                 parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                 parser.i = 0;
+                 if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                     throw new TexError('MaxMacroSub1',
+                     'MathJax maximum macro substitution count exceeded; ' +
+                     'is there a recursive macro call?');
+                 }
+             }
 
 
-            //      Create the command map for:
-            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
-            new CommandMap('Lwarp-macros', {
-                ifstar: 'IfstarFunction',
-                ifnextchar: 'IfnextcharFunction',
-                ifblank: 'IfblankFunction',
-                ifstrequal: 'IfstrequalFunction',
-                gsubstitute: 'GsubstituteFunction',
-                seteqnumber: 'SeteqnumberFunction'
-            }, {
-                //      This function implements an ifstar macro.
-                IfstarFunction(parser, name) {
-                    const resultstar = parser.GetArgument(name);
-                    const resultnostar = parser.GetArgument(name);
-                    const star = parser.GetStar();                      // true if there is a *
-                    useArgument(parser, star ? resultstar : resultnostar);
-                },
+             //       Create the command map for:
+             //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+             new CommandMap('Lwarp-macros', {
+                 ifstar: 'IfstarFunction',
+                 ifnextchar: 'IfnextcharFunction',
+                 ifblank: 'IfblankFunction',
+                 ifstrequal: 'IfstrequalFunction',
+                 gsubstitute: 'GsubstituteFunction',
+                 seteqnumber: 'SeteqnumberFunction'
+             }, {
+                 //      This function implements an ifstar macro.
+                 IfstarFunction(parser, name) {
+                     const resultstar = parser.GetArgument(name);
+                     const resultnostar = parser.GetArgument(name);
+                     const star = parser.GetStar();                        // true if there is a *
+                     useArgument(parser, star ? resultstar : resultnostar);
+                 },
 
 
-                //      This function implements an ifnextchar macro.
-                IfnextcharFunction(parser, name) {
-                    let whichchar = parser.GetArgument(name);
-                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
-                        // $ syntax highlighting
-                        whichchar = String.fromCodePoint(parseInt(whichchar));
-                    }
-                    const resultnextchar = parser.GetArgument(name);
-                    const resultnotnextchar = parser.GetArgument(name);
-                    const gotchar = (parser.GetNext() === whichchar);
-                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
-                },
+                 //      This function implements an ifnextchar macro.
+                 IfnextcharFunction(parser, name) {
+                     let whichchar = parser.GetArgument(name);
+                     if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                         // $ syntax highlighting
+                         whichchar = String.fromCodePoint(parseInt(whichchar));
+                     }
+                     const resultnextchar = parser.GetArgument(name);
+                     const resultnotnextchar = parser.GetArgument(name);
+                     const gotchar = (parser.GetNext() === whichchar);
+                     useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                 },
 
 
-                // This function implements an ifblank macro.
-                IfblankFunction(parser, name) {
-                    const blankarg = parser.GetArgument(name);
-                    const resultblank = parser.GetArgument(name);
-                    const resultnotblank = parser.GetArgument(name);
-                    const isblank = (blankarg.trim() == "");
-                    useArgument(parser, isblank ? resultblank : resultnotblank);
-                },
+                 // This function implements an ifblank macro.
+                 IfblankFunction(parser, name) {
+                     const blankarg = parser.GetArgument(name);
+                     const resultblank = parser.GetArgument(name);
+                     const resultnotblank = parser.GetArgument(name);
+                     const isblank = (blankarg.trim() == "");
+                     useArgument(parser, isblank ? resultblank : resultnotblank);
+                 },
 
 
-                // This function implements an ifstrequal macro.
-                IfstrequalFunction(parser, name) {
-                    const strequalfirst = parser.GetArgument(name);
-                    const strequalsecond = parser.GetArgument(name);
-                    const resultequal = parser.GetArgument(name);
-                    const resultnotequal = parser.GetArgument(name);
-                    const isequal = (strequalfirst == strequalsecond);
-                    useArgument(parser, isequal ? resultequal : resultnotequal);
-                },
+                 // This function implements an ifstrequal macro.
+                 IfstrequalFunction(parser, name) {
+                     const strequalfirst = parser.GetArgument(name);
+                     const strequalsecond = parser.GetArgument(name);
+                     const resultequal = parser.GetArgument(name);
+                     const resultnotequal = parser.GetArgument(name);
+                     const isequal = (strequalfirst == strequalsecond);
+                     useArgument(parser, isequal ? resultequal : resultnotequal);
+                 },
 
 
-                // This function implements a gsub macro.
-                GsubstituteFunction(parser, name) {
-                    const gsubfirst = parser.GetArgument(name);
-                    const gsubsecond = parser.GetArgument(name);
-                    const gsubthird = parser.GetArgument(name);
-                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
-                    useArgument(parser, gsubresult);
-                },
+                 // This function implements a gsub macro.
+                 GsubstituteFunction(parser, name) {
+                     const gsubfirst = parser.GetArgument(name);
+                     const gsubsecond = parser.GetArgument(name);
+                     const gsubthird = parser.GetArgument(name);
+                     let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                     useArgument(parser, gsubresult);
+                 },
 
 
-                //      This function modifies the equation numbers.
-                SeteqnumberFunction(parser, name) {
-                        //   Get the macro parameters
-                        const star = parser.GetStar();                    // true if there is a *
-                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
-                        const newsubequations = parser.GetArgument(name);    // the subequations argument
-                        const neweqsection = parser.GetArgument(name);    // the eq section argument
-                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
-                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
-                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
-                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
-                }
+                 //      This function modifies the equation numbers.
+                 SeteqnumberFunction(parser, name) {
+                         //   Get the macro parameters
+                         const star = parser.GetStar();                       // true if there is a *
+                         const optBrackets = parser.GetBrackets(name);        // contents of optional brackets
+                         const newsubequations = parser.GetArgument(name);       // the subequations argument
+                         const neweqsection = parser.GetArgument(name);       // the eq section argument
+                         const neweqnumber = parser.GetArgument(name);        // the eq number argument
+                         MathJax.config.subequations=newsubequations ;        // a string with boolean meaning
+                         MathJax.config.section=neweqsection ;                // a string with numeric meaning
+                         parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                 }
 
 
-            });
+             });
 
 
-            //      Create the Lwarp-macros package
-            Configuration.create('Lwarp-macros', {
-                handler: {macro: ['Lwarp-macros']}
-            });
+             //       Create the Lwarp-macros package
+             Configuration.create('Lwarp-macros', {
+                 handler: {macro: ['Lwarp-macros']}
+             });
 
 
-            MathJax.startup.defaultReady();
+             MathJax.startup.defaultReady();
 
 
-            // For forward references:
-            MathJax.startup.input[0].preFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        MathJax.config.subequations = math.inputData.recompile.subequations;
-                        MathJax.config.section = math.inputData.recompile.section;
-                }
-            });
-            MathJax.startup.input[0].postFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        math.inputData.recompile.subequations = MathJax.config.subequations;
-                        math.inputData.recompile.section = MathJax.config.section;
-                }
-            });
+             // For forward references:
+             MathJax.startup.input[0].preFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         MathJax.config.subequations = math.inputData.recompile.subequations;
+                         MathJax.config.section = math.inputData.recompile.section;
+                 }
+             });
+             MathJax.startup.input[0].postFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         math.inputData.recompile.subequations = MathJax.config.subequations;
+                         math.inputData.recompile.section = MathJax.config.section;
+                 }
+             });
 
 
-                // For \left, \right with unicode-math:
-                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
-                const {Symbol} = MathJax._.input.tex.Symbol;
-                const {MapHandler} = MathJax._.input.tex.MapHandler;
-                const delimiter = MapHandler.getMap('delimiter');
-                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
-                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
-                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
-                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
-                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
-                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
-                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
-                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
-                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
-                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
-                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
-                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
-                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
-                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
-                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
-                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
-                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
-                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
-                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
-                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
-                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
-                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
-                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
-                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
-                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
-                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
-                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
-                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
-                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
-                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
-                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
-                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
-                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
-                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
-                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
-                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
-                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
-                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
-                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
-        }        // ready
-    },          // startup
+                 // For \left, \right with unicode-math:
+                 const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                 const {Symbol} = MathJax._.input.tex.Symbol;
+                 const {MapHandler} = MathJax._.input.tex.MapHandler;
+                 const delimiter = MapHandler.getMap('delimiter');
+                 delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                 delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                 delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                 delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                 delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                 delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                 delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                 delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                 delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                 delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                 delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                 delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                 delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                 delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                 delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                 delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                 delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                 delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                 delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                 delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                 delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                 delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                 delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                 delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                 delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                 delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                 delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                 delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                 delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                 delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                 delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                 delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                 delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                 delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                 delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                 delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                 delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                 delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                 delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+         }       // ready
+    },           // startup
 
 
     tex: {
-        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
-        tags: "ams",
-                tagformat: {
-                        number: function (n) {
-                             if(MathJax.config.subequations==0)
-                                 return(MathJax.config.section + n);
-                             else
-                                 return(MathJax.config.section + String.fromCharCode(96+n));
-                        },
-                },
+         packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+         tags: "ams",
+                 tagformat: {
+                         number: function (n) {
+                              if(MathJax.config.subequations==0)
+                                     return(MathJax.config.section + n);
+                              else
+                                     return(MathJax.config.section + String.fromCharCode(96+n));
+                         },
+                 },
     }
 }
 </script>
 
 
 <script
-        id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+         id="MathJax-script"
+         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
 ></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre.programlisting").forEach(el => {
+    const rawText = el.textContent;
+    const code = document.createElement("code");
+    // Default to Lisp, only use Bash for actual terminal commands
+    code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+    code.textContent = rawText;
+    el.innerHTML = "";
+    el.appendChild(code);
+    hljs.highlightElement(code);
+  });
+});
+</script>
 </head>
 <body>
 
@@ -277,7 +296,7 @@ Home</a>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-55" class="tocsection" >
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -423,58 +442,6 @@ Home</a>
 
 \(\let \Vec \vec \)
 
-\(\require {mathtools}\)
-
-\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
-
-\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
-
-\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
-
-\(\newcommand {\simcolon }{\sim \vcentcolon }\)
-
-\(\newcommand {\Simcolon }{\sim \dblcolon }\)
-
-\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
-
-\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
-
-\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
-
-\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
-
-\(\newenvironment {crampedsubarray}[1]{}{}\)
-
-\(\newcommand {\smashoperator }[2][]{#2\limits }\)
-
-\(\newcommand {\SwapAboveDisplaySkip }{}\)
-
-\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
-
-\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
-
-\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
-
-\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
-
-\(\let \xlongleftarrow \xleftarrow \)
-
-\(\let \xlongrightarrow \xrightarrow \)
-
-\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
-
-\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
-
-\(\let \LWRorigshoveleft \shoveleft \)
-
-\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
-
-\(\let \LWRorigshoveright \shoveright \)
-
-\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
-
-\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
-
 </div>
 
 <!--
@@ -548,14 +515,14 @@ In this section, we will go over the basic usage of unbounded Multi-Producer Mul
 <li>
 <p>
 <span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >fl</span> when calling its functions.
 </p>
 <p>
 <span style="width:20pt; display:inline-block"><!----></span>For example: <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(fl:queue-push *work-queue* i)</span>
 </p>
 
@@ -608,8 +575,8 @@ architecture.
 
 <p>
 <b>Producers</b> A producer thread works by calling <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(queue-push *work-queue* item)</span>. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
 </p>
 <div class="figurecaption">
@@ -626,17 +593,17 @@ architecture.
 </div>
 
 <p>
-n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if
-you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-12"></a><sup>,</sup> <sup>2</sup>
+<i>n.b.,</i> It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases;
+however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-12"></a><sup>,</sup> <sup>2</sup>
 </p>
 
 <p>
 <b>Consumers</b> A consumer thread works by calling <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(queue-pop *work-queue*)</span>. This procedure does not return lisp conditions; instead, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >queue-pop</span> returns two specific values:
 </p>
 <ul class="enumerate" style="list-style-type:none">
@@ -644,11 +611,11 @@ you simply ran the example in a fresh REPL, you would risk locking up your entir
 <li>
 <p>
 <span class="listmarker">1.</span> The <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >item</span> itself or <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >NIL</span> if empty.
 </p>
 
@@ -657,27 +624,27 @@ you simply ran the example in a fresh REPL, you would risk locking up your entir
 
 <p>
 <span class="listmarker">2.</span> A <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >success</span> boolean, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >T</span> if an item was grabbed, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >NIL</span> if the queue was empty.
 </p>
 </li>
 </ul>
 
 <p>
-n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
+<i>n.b.,</i> If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
 </p>
 
 <p>
 You must wrap the procedure in a <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >multiple-value-bind</span> to check if the pop was successful.
 </p>
 <div class="figurecaption">
@@ -707,25 +674,16 @@ You must wrap the procedure in a <span
 
 <a id="Manual-autopage-14"></a>
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+<sup>1</sup>&nbsp;This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state — hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
-would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
+<sup>2</sup>&nbsp;Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state — hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would
+actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue — consequently, this tanks a systems performance.
+<sup>3</sup>&nbsp;Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue — consequently, this tanks a systems performance.
 </p>
 
 
@@ -811,20 +769,3 @@ Home</a></nav>
 </div><!-- grid -->
 </body>
 </html>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
-<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-<script>
-document.querySelectorAll("pre.programlisting").forEach(el => {
-  const rawText = el.textContent;
-  const code = document.createElement("code");
-  // Default to Lisp, only use Bash for actual terminal commands
-  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
-  code.textContent = rawText;
-  el.innerHTML = "";
-  el.appendChild(code);
-  hljs.highlightElement(code);
-});
-</script>

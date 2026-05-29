@@ -28,9 +28,8 @@ clean-scripts:
 
 clean-lwarp:
 	@echo "Cleaning directory of lwarp artifacts..."
-	@rm -f *.lwarpmkconf *_html.tex *.cut *.css *.ist *.conf *.xdy *_html.pdf *.sidetoc *_html.html
-	@rm -f tex/*.lwarpmkconf tex/*_html.tex tex/*.cut tex/*.listing tex/.log tex/*.css tex/*.ist tex/*.conf tex/*.xdy tex/*_html.pdf tex/*.sidetoc tex/*_html.html
-
+	@rm -f *.lwarpmkconf *_html.tex *.cut *.css *.ist *.conf *.xdy *_html.pdf *.sidetoc *.html
+	@rm -f tex/*.lwarpmkconf tex/*_html.tex tex/*.cut tex/*.listing tex/.log tex/*.css tex/*.ist tex/*.conf tex/*.xdy tex/*_html.pdf tex/*.sidetoc tex/*.html
 clean-docs:
 	@echo "Cleaning docs/ completely..."
 	@rm -rf docs/
@@ -80,31 +79,56 @@ docs:
 # I can't figure out how lwarp handles colored text, so I'm just gonna inject the lwarp.css file post compile for now.
 # Disclaimer: I used AI to help speed up the creation of this updated target. I did not feel like writing all that. Front end is not my thing.
 # I'm also curious how emacs eww would render our html.
+# Making sure that the injection is injected before the html closing, and that Biber is ran against file_html
+# 	@rm -f "tex/$(FILE).html"   # prevent lwarpmk timestamp skip on first call
+#	@echo "Generating HTML bibliography via Biber..."
+#	@cd tex && lwarpmk html "$(FILE)"   # generates $(FILE)_html.bcf that biber needs
+#	@cd tex && biber "$(FILE)_html"     # _html suffix required: separate job, separate aux files
+#	@echo "Running two lualatex passes to resolve citations..."
+#	@cd tex && lualatex "$(FILE)_html.tex"   # first pass reads the .bbl
+#	@cd tex && lualatex "$(FILE)_html.tex"   # second pass stabilizes cross-references
+#	@echo "Running lwarpmk html $(FILE) final pass..."
+#	@rm -f "tex/$(FILE).html"   # force conversion from the now-resolved PDF
+#	@cd tex && lwarpmk html "$(FILE)"
+
 lwarpmk:
-	@echo "Running lwarpmk html $(FILE)"
+	@rm -f "tex/$(FILE).html"  # prevent lwarpmk timestamp skip on first call
+	@echo "Generating HTML bibliography via Biber..."
+	@cd tex && lwarpmk html "$(FILE)"
+	@cd tex && biber "$(FILE)_html"
+	@echo "Running two lualatex passes to resolve citations..."
+	@cd tex && lualatex "$(FILE)_html.tex"
+	@cd tex && lualatex "$(FILE)_html.tex"
+	@echo "Running lwarpmk html $(FILE) final pass..."
+	@rm -f "tex/$(FILE).html"
 	@cd tex && lwarpmk html "$(FILE)"
 	@echo "Injecting custom structural CSS into lwarp.css..."
 	@echo "/* --- CUSTOM CODE BLOCK STRUCTURE --- */" >> tex/lwarp.css
 	@echo "pre.programlisting { background-color: #f0f0f0; border: 1.5pt solid black; padding: 10px; margin-bottom: 1.5em; overflow-x: auto; white-space: pre-wrap; font-family: monospace; }" >> tex/lwarp.css
-	@echo "Injecting Highlight.js into all HTML files..."
-	@for html_file in tex/*.html; do \
-		echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">' >> "$$html_file"; \
-		echo '<style>.hljs { background: transparent !important; padding: 0 !important; }</style>' >> "$$html_file"; \
-		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>' >> "$$html_file"; \
-		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>' >> "$$html_file"; \
-		echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>' >> "$$html_file"; \
-		echo '<script>' >> "$$html_file"; \
-		echo 'document.querySelectorAll("pre.programlisting").forEach(el => {' >> "$$html_file"; \
-		echo '  const rawText = el.textContent;' >> "$$html_file"; \
-		echo '  const code = document.createElement("code");' >> "$$html_file"; \
-		echo '  // Default to Lisp, only use Bash for actual terminal commands' >> "$$html_file"; \
-		echo '  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";' >> "$$html_file"; \
-		echo '  code.textContent = rawText;' >> "$$html_file"; \
-		echo '  el.innerHTML = "";' >> "$$html_file"; \
-		echo '  el.appendChild(code);' >> "$$html_file"; \
-		echo '  hljs.highlightElement(code);' >> "$$html_file"; \
-		echo '});' >> "$$html_file"; \
-		echo '</script>' >> "$$html_file"; \
+	@echo "Injecting Highlight.js into all HTML <head> tags..."
+	@for html_file in tex/*.html; \
+	do \
+		awk '/<\/head>/ { \
+			print "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css\">"; \
+			print "<style>.hljs { background: transparent !important; padding: 0 !important; }</style>"; \
+			print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js\"></script>"; \
+			print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js\"></script>"; \
+			print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js\"></script>"; \
+			print "<script>"; \
+			print "document.addEventListener(\"DOMContentLoaded\", () => {"; \
+			print "  document.querySelectorAll(\"pre.programlisting\").forEach(el => {"; \
+			print "    const rawText = el.textContent;"; \
+			print "    const code = document.createElement(\"code\");"; \
+			print "    // Default to Lisp, only use Bash for actual terminal commands"; \
+			print "    code.className = (rawText.includes(\"git clone\") || rawText.includes(\"cd \")) ? \"language-bash\" : \"language-lisp\";"; \
+			print "    code.textContent = rawText;"; \
+			print "    el.innerHTML = \"\";"; \
+			print "    el.appendChild(code);"; \
+			print "    hljs.highlightElement(code);"; \
+			print "  });"; \
+			print "});"; \
+			print "</script>"; \
+		} 1' "$$html_file" > "$$html_file.tmp" && mv "$$html_file.tmp" "$$html_file"; \
 	done
 
 limages:
@@ -120,7 +144,10 @@ find-html-deps:
 
 compile-tex:
 	@echo "Compiling $(FILE).tex into $(FILE).pdf..."
-	@cd tex && pdflatex "$(FILE).tex"
+	@cd tex && lualatex "$(FILE).tex"
+	@cd tex && biber "$(FILE)"
+	@cd tex && lualatex "$(FILE).tex"
+	@cd tex && lualatex "$(FILE).tex"
 
 auto-run:
 	@test -n "$(FILE)" || (echo "Usage: make auto-run FILE=YourFile" >&2; exit 1)

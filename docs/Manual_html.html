@@ -26,208 +26,227 @@ MathJax = {
     subequations: "0",
     section: "",
     loader: {
-        load: ['[tex]/tagformat', '[tex]/textmacros'],
+         load: ['[tex]/tagformat', '[tex]/textmacros'],
     },
     startup: {
-        ready() {
-            //      These would be replaced by import commands if you wanted to make
-            //      a proper extension.
-            const Configuration = MathJax._.input.tex.Configuration.Configuration;
-            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
-            const Macro = MathJax._.input.tex.Symbol.Macro;
-            const TexError = MathJax._.input.tex.TexError.default;
-            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
-            const expandable = MathJax._.util.Options.expandable;
+         ready() {
+             //       These would be replaced by import commands if you wanted to make
+             //       a proper extension.
+             const Configuration = MathJax._.input.tex.Configuration.Configuration;
+             const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+             const Macro = MathJax._.input.tex.Symbol.Macro;
+             const TexError = MathJax._.input.tex.TexError.default;
+             const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+             const expandable = MathJax._.util.Options.expandable;
 
 
-            //      Insert the replacement string into the TeX string, and check
-            //      that there haven't been too many maxro substitutions (prevents
-            //      infinite loops).
-            const useArgument = (parser, text) => {
-                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
-                parser.i = 0;
-                if (++parser.macroCount > parser.configuration.options.maxMacros) {
-                    throw new TexError('MaxMacroSub1',
-                    'MathJax maximum macro substitution count exceeded; ' +
-                    'is there a recursive macro call?');
-                }
-            }
+             //       Insert the replacement string into the TeX string, and check
+             //       that there haven't been too many maxro substitutions (prevents
+             //       infinite loops).
+             const useArgument = (parser, text) => {
+                 parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                 parser.i = 0;
+                 if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                     throw new TexError('MaxMacroSub1',
+                     'MathJax maximum macro substitution count exceeded; ' +
+                     'is there a recursive macro call?');
+                 }
+             }
 
 
-            //      Create the command map for:
-            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
-            new CommandMap('Lwarp-macros', {
-                ifstar: 'IfstarFunction',
-                ifnextchar: 'IfnextcharFunction',
-                ifblank: 'IfblankFunction',
-                ifstrequal: 'IfstrequalFunction',
-                gsubstitute: 'GsubstituteFunction',
-                seteqnumber: 'SeteqnumberFunction'
-            }, {
-                //      This function implements an ifstar macro.
-                IfstarFunction(parser, name) {
-                    const resultstar = parser.GetArgument(name);
-                    const resultnostar = parser.GetArgument(name);
-                    const star = parser.GetStar();                      // true if there is a *
-                    useArgument(parser, star ? resultstar : resultnostar);
-                },
+             //       Create the command map for:
+             //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+             new CommandMap('Lwarp-macros', {
+                 ifstar: 'IfstarFunction',
+                 ifnextchar: 'IfnextcharFunction',
+                 ifblank: 'IfblankFunction',
+                 ifstrequal: 'IfstrequalFunction',
+                 gsubstitute: 'GsubstituteFunction',
+                 seteqnumber: 'SeteqnumberFunction'
+             }, {
+                 //      This function implements an ifstar macro.
+                 IfstarFunction(parser, name) {
+                     const resultstar = parser.GetArgument(name);
+                     const resultnostar = parser.GetArgument(name);
+                     const star = parser.GetStar();                        // true if there is a *
+                     useArgument(parser, star ? resultstar : resultnostar);
+                 },
 
 
-                //      This function implements an ifnextchar macro.
-                IfnextcharFunction(parser, name) {
-                    let whichchar = parser.GetArgument(name);
-                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
-                        // $ syntax highlighting
-                        whichchar = String.fromCodePoint(parseInt(whichchar));
-                    }
-                    const resultnextchar = parser.GetArgument(name);
-                    const resultnotnextchar = parser.GetArgument(name);
-                    const gotchar = (parser.GetNext() === whichchar);
-                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
-                },
+                 //      This function implements an ifnextchar macro.
+                 IfnextcharFunction(parser, name) {
+                     let whichchar = parser.GetArgument(name);
+                     if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                         // $ syntax highlighting
+                         whichchar = String.fromCodePoint(parseInt(whichchar));
+                     }
+                     const resultnextchar = parser.GetArgument(name);
+                     const resultnotnextchar = parser.GetArgument(name);
+                     const gotchar = (parser.GetNext() === whichchar);
+                     useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                 },
 
 
-                // This function implements an ifblank macro.
-                IfblankFunction(parser, name) {
-                    const blankarg = parser.GetArgument(name);
-                    const resultblank = parser.GetArgument(name);
-                    const resultnotblank = parser.GetArgument(name);
-                    const isblank = (blankarg.trim() == "");
-                    useArgument(parser, isblank ? resultblank : resultnotblank);
-                },
+                 // This function implements an ifblank macro.
+                 IfblankFunction(parser, name) {
+                     const blankarg = parser.GetArgument(name);
+                     const resultblank = parser.GetArgument(name);
+                     const resultnotblank = parser.GetArgument(name);
+                     const isblank = (blankarg.trim() == "");
+                     useArgument(parser, isblank ? resultblank : resultnotblank);
+                 },
 
 
-                // This function implements an ifstrequal macro.
-                IfstrequalFunction(parser, name) {
-                    const strequalfirst = parser.GetArgument(name);
-                    const strequalsecond = parser.GetArgument(name);
-                    const resultequal = parser.GetArgument(name);
-                    const resultnotequal = parser.GetArgument(name);
-                    const isequal = (strequalfirst == strequalsecond);
-                    useArgument(parser, isequal ? resultequal : resultnotequal);
-                },
+                 // This function implements an ifstrequal macro.
+                 IfstrequalFunction(parser, name) {
+                     const strequalfirst = parser.GetArgument(name);
+                     const strequalsecond = parser.GetArgument(name);
+                     const resultequal = parser.GetArgument(name);
+                     const resultnotequal = parser.GetArgument(name);
+                     const isequal = (strequalfirst == strequalsecond);
+                     useArgument(parser, isequal ? resultequal : resultnotequal);
+                 },
 
 
-                // This function implements a gsub macro.
-                GsubstituteFunction(parser, name) {
-                    const gsubfirst = parser.GetArgument(name);
-                    const gsubsecond = parser.GetArgument(name);
-                    const gsubthird = parser.GetArgument(name);
-                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
-                    useArgument(parser, gsubresult);
-                },
+                 // This function implements a gsub macro.
+                 GsubstituteFunction(parser, name) {
+                     const gsubfirst = parser.GetArgument(name);
+                     const gsubsecond = parser.GetArgument(name);
+                     const gsubthird = parser.GetArgument(name);
+                     let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                     useArgument(parser, gsubresult);
+                 },
 
 
-                //      This function modifies the equation numbers.
-                SeteqnumberFunction(parser, name) {
-                        //   Get the macro parameters
-                        const star = parser.GetStar();                    // true if there is a *
-                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
-                        const newsubequations = parser.GetArgument(name);    // the subequations argument
-                        const neweqsection = parser.GetArgument(name);    // the eq section argument
-                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
-                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
-                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
-                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
-                }
+                 //      This function modifies the equation numbers.
+                 SeteqnumberFunction(parser, name) {
+                         //   Get the macro parameters
+                         const star = parser.GetStar();                       // true if there is a *
+                         const optBrackets = parser.GetBrackets(name);        // contents of optional brackets
+                         const newsubequations = parser.GetArgument(name);       // the subequations argument
+                         const neweqsection = parser.GetArgument(name);       // the eq section argument
+                         const neweqnumber = parser.GetArgument(name);        // the eq number argument
+                         MathJax.config.subequations=newsubequations ;        // a string with boolean meaning
+                         MathJax.config.section=neweqsection ;                // a string with numeric meaning
+                         parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                 }
 
 
-            });
+             });
 
 
-            //      Create the Lwarp-macros package
-            Configuration.create('Lwarp-macros', {
-                handler: {macro: ['Lwarp-macros']}
-            });
+             //       Create the Lwarp-macros package
+             Configuration.create('Lwarp-macros', {
+                 handler: {macro: ['Lwarp-macros']}
+             });
 
 
-            MathJax.startup.defaultReady();
+             MathJax.startup.defaultReady();
 
 
-            // For forward references:
-            MathJax.startup.input[0].preFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        MathJax.config.subequations = math.inputData.recompile.subequations;
-                        MathJax.config.section = math.inputData.recompile.section;
-                }
-            });
-            MathJax.startup.input[0].postFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        math.inputData.recompile.subequations = MathJax.config.subequations;
-                        math.inputData.recompile.section = MathJax.config.section;
-                }
-            });
+             // For forward references:
+             MathJax.startup.input[0].preFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         MathJax.config.subequations = math.inputData.recompile.subequations;
+                         MathJax.config.section = math.inputData.recompile.section;
+                 }
+             });
+             MathJax.startup.input[0].postFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         math.inputData.recompile.subequations = MathJax.config.subequations;
+                         math.inputData.recompile.section = MathJax.config.section;
+                 }
+             });
 
 
-                // For \left, \right with unicode-math:
-                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
-                const {Symbol} = MathJax._.input.tex.Symbol;
-                const {MapHandler} = MathJax._.input.tex.MapHandler;
-                const delimiter = MapHandler.getMap('delimiter');
-                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
-                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
-                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
-                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
-                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
-                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
-                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
-                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
-                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
-                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
-                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
-                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
-                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
-                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
-                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
-                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
-                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
-                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
-                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
-                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
-                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
-                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
-                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
-                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
-                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
-                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
-                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
-                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
-                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
-                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
-                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
-                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
-                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
-                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
-                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
-                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
-                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
-                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
-                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
-        }        // ready
-    },          // startup
+                 // For \left, \right with unicode-math:
+                 const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                 const {Symbol} = MathJax._.input.tex.Symbol;
+                 const {MapHandler} = MathJax._.input.tex.MapHandler;
+                 const delimiter = MapHandler.getMap('delimiter');
+                 delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                 delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                 delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                 delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                 delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                 delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                 delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                 delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                 delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                 delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                 delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                 delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                 delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                 delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                 delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                 delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                 delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                 delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                 delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                 delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                 delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                 delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                 delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                 delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                 delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                 delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                 delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                 delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                 delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                 delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                 delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                 delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                 delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                 delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                 delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                 delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                 delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                 delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                 delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+         }       // ready
+    },           // startup
 
 
     tex: {
-        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
-        tags: "ams",
-                tagformat: {
-                        number: function (n) {
-                             if(MathJax.config.subequations==0)
-                                 return(MathJax.config.section + n);
-                             else
-                                 return(MathJax.config.section + String.fromCharCode(96+n));
-                        },
-                },
+         packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+         tags: "ams",
+                 tagformat: {
+                         number: function (n) {
+                              if(MathJax.config.subequations==0)
+                                     return(MathJax.config.section + n);
+                              else
+                                     return(MathJax.config.section + String.fromCharCode(96+n));
+                         },
+                 },
     }
 }
 </script>
 
 
 <script
-        id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+         id="MathJax-script"
+         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
 ></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre.programlisting").forEach(el => {
+    const rawText = el.textContent;
+    const code = document.createElement("code");
+    // Default to Lisp, only use Bash for actual terminal commands
+    code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+    code.textContent = rawText;
+    el.innerHTML = "";
+    el.appendChild(code);
+    hljs.highlightElement(code);
+  });
+});
+</script>
 </head>
 <body>
 <!--|Using lwarp|Manual.html|-->
@@ -370,58 +389,6 @@ MathJax = {
 
 \(\let \Vec \vec \)
 
-\(\require {mathtools}\)
-
-\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
-
-\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
-
-\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
-
-\(\newcommand {\simcolon }{\sim \vcentcolon }\)
-
-\(\newcommand {\Simcolon }{\sim \dblcolon }\)
-
-\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
-
-\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
-
-\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
-
-\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
-
-\(\newenvironment {crampedsubarray}[1]{}{}\)
-
-\(\newcommand {\smashoperator }[2][]{#2\limits }\)
-
-\(\newcommand {\SwapAboveDisplaySkip }{}\)
-
-\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
-
-\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
-
-\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
-
-\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
-
-\(\let \xlongleftarrow \xleftarrow \)
-
-\(\let \xlongrightarrow \xrightarrow \)
-
-\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
-
-\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
-
-\(\let \LWRorigshoveleft \shoveleft \)
-
-\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
-
-\(\let \LWRorigshoveright \shoveright \)
-
-\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
-
-\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
-
 </div>
 
 <a id="Manual-autopage-1"></a>
@@ -446,7 +413,7 @@ Andrew D. France
 <div class="titledate">
 
 <p>
-Last edited: 2026-05-28T14:29:10-05:00 UTC
+Last edited: 2026-05-28T23:32:12-05:00 UTC
 </p>
 </div>
 
@@ -588,259 +555,259 @@ Last edited: 2026-05-28T14:29:10-05:00 UTC
 
 
 <p>
-<a href="API-Reference.html#autosec-39" class="tocsubsection" >
+<a href="API-Reference.html#autosec-40" class="tocsubsection" >
 <span class="sectionnumber">2.3</span>&#x2003;MPMC Bounded Queue</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-40" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.1</span>&#x2003;BOUNDED-QUEUE</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-41" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.2</span>&#x2003;MAKE-BOUNDED-QUEUE</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-42" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.3</span>&#x2003;BOUNDED-QUEUE-CAPACITY</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-43" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.4</span>&#x2003;BOUNDED-QUEUE-PUSH</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-44" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.5</span>&#x2003;BOUNDED-QUEUE-POP</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-45" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-46" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.6</span>&#x2003;BOUNDED-QUEUE-EMPTY-P</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-46" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.7</span>&#x2003;BOUNDED-QUEUE-FULL-P</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-47" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.8</span>&#x2003;BOUNDED-QUEUE-PUSH-BATCH</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-48" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-49" class="tocsubsubsection" >
 <span class="sectionnumber">2.3.9</span>&#x2003;BOUNDED-QUEUE-POP-BATCH</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-49" class="tocsubsection" >
+<a href="API-Reference.html#autosec-50" class="tocsubsection" >
 <span class="sectionnumber">2.4</span>&#x2003;SPSC Bounded Queue</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-50" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
 <span class="sectionnumber">2.4.1</span>&#x2003;SPSC-QUEUE</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-51" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-52" class="tocsubsubsection" >
 <span class="sectionnumber">2.4.2</span>&#x2003;MAKE-SPSC-QUEUE</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-52" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
 <span class="sectionnumber">2.4.3</span>&#x2003;SPSC-PUSH</a>
 </p>
 
 
 <p>
-<a href="API-Reference.html#autosec-53" class="tocsubsubsection" >
+<a href="API-Reference.html#autosec-54" class="tocsubsubsection" >
 <span class="sectionnumber">2.4.4</span>&#x2003;SPSC-POP</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-55" class="tocsection" >
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-56" class="tocsubsection" >
+<a href="Performance-Guide.html#autosec-57" class="tocsubsection" >
 <span class="sectionnumber">3.1</span>&#x2003;General Performance Principles</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-57" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-58" class="tocsubsubsection" >
 <span class="sectionnumber">3.1.1</span>&#x2003;Choose the Right Data Structure</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-58" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-59" class="tocsubsubsection" >
 <span class="sectionnumber">3.1.2</span>&#x2003;Capacity Selection</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-59" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-60" class="tocsubsubsection" >
 <span class="sectionnumber">3.1.3</span>&#x2003;Thread Contention</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-60" class="tocsubsection" >
+<a href="Performance-Guide.html#autosec-61" class="tocsubsection" >
 <span class="sectionnumber">3.2</span>&#x2003;Optimization Techniques</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-61" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-62" class="tocsubsubsection" >
 <span class="sectionnumber">3.2.1</span>&#x2003;Batch Operations</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-62" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-63" class="tocsubsubsection" >
 <span class="sectionnumber">3.2.2</span>&#x2003;Avoid Busy Waiting</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-63" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-64" class="tocsubsubsection" >
 <span class="sectionnumber">3.2.3</span>&#x2003;Memory Allocation</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-64" class="tocsubsection" >
+<a href="Performance-Guide.html#autosec-65" class="tocsubsection" >
 <span class="sectionnumber">3.3</span>&#x2003;Implementation-Specific Notes</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-65" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-66" class="tocsubsubsection" >
 <span class="sectionnumber">3.3.1</span>&#x2003;SBCL</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-66" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-67" class="tocsubsubsection" >
 <span class="sectionnumber">3.3.2</span>&#x2003;CLASP</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-67" class="tocsubsection" >
+<a href="Performance-Guide.html#autosec-68" class="tocsubsection" >
 <span class="sectionnumber">3.4</span>&#x2003;Common Pitfalls</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-68" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-69" class="tocsubsubsection" >
 <span class="sectionnumber">3.4.1</span>&#x2003;Wrong capacity</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-69" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-70" class="tocsubsubsection" >
 <span class="sectionnumber">3.4.2</span>&#x2003;Thread safety</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-70" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-71" class="tocsubsubsection" >
 <span class="sectionnumber">3.4.3</span>&#x2003;Busy waitings</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-71" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-72" class="tocsubsubsection" >
 <span class="sectionnumber">3.4.4</span>&#x2003;Memory leaks</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-72" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-73" class="tocsubsubsection" >
 <span class="sectionnumber">3.4.5</span>&#x2003;False sharing</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-73" class="tocsubsection" >
+<a href="Performance-Guide.html#autosec-74" class="tocsubsection" >
 <span class="sectionnumber">3.5</span>&#x2003;Recommended Patterns</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-74" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-75" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.1</span>&#x2003;Producer-Consumer Pool</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-75" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-76" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.2</span>&#x2003;Basic Producer-Consumer</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-76" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-77" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.3</span>&#x2003;Bounded Buffer with Batch Processing</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-77" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-78" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.4</span>&#x2003;SPSC Pipeline</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-78" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-79" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.5</span>&#x2003;Load Balancing with Multiple Queues</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-79" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-80" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.6</span>&#x2003;Web Server Request Queue</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-80" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-81" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.7</span>&#x2003;Atomic Counter Service</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-81" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-82" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.8</span>&#x2003;Event Processing Pipeline</a>
 </p>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-82" class="tocsubsubsection" >
+<a href="Performance-Guide.html#autosec-83" class="tocsubsubsection" >
 <span class="sectionnumber">3.5.9</span>&#x2003;Memory Pool with Lock-Free Allocation</a>
 </p>
 </nav>
@@ -860,7 +827,7 @@ Last edited: 2026-05-28T14:29:10-05:00 UTC
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual - Tutorial</title>
+<title>cl-freelock Manual — Tutorial</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -882,208 +849,227 @@ MathJax = {
     subequations: "0",
     section: "",
     loader: {
-        load: ['[tex]/tagformat', '[tex]/textmacros'],
+         load: ['[tex]/tagformat', '[tex]/textmacros'],
     },
     startup: {
-        ready() {
-            //      These would be replaced by import commands if you wanted to make
-            //      a proper extension.
-            const Configuration = MathJax._.input.tex.Configuration.Configuration;
-            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
-            const Macro = MathJax._.input.tex.Symbol.Macro;
-            const TexError = MathJax._.input.tex.TexError.default;
-            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
-            const expandable = MathJax._.util.Options.expandable;
+         ready() {
+             //       These would be replaced by import commands if you wanted to make
+             //       a proper extension.
+             const Configuration = MathJax._.input.tex.Configuration.Configuration;
+             const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+             const Macro = MathJax._.input.tex.Symbol.Macro;
+             const TexError = MathJax._.input.tex.TexError.default;
+             const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+             const expandable = MathJax._.util.Options.expandable;
 
 
-            //      Insert the replacement string into the TeX string, and check
-            //      that there haven't been too many maxro substitutions (prevents
-            //      infinite loops).
-            const useArgument = (parser, text) => {
-                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
-                parser.i = 0;
-                if (++parser.macroCount > parser.configuration.options.maxMacros) {
-                    throw new TexError('MaxMacroSub1',
-                    'MathJax maximum macro substitution count exceeded; ' +
-                    'is there a recursive macro call?');
-                }
-            }
+             //       Insert the replacement string into the TeX string, and check
+             //       that there haven't been too many maxro substitutions (prevents
+             //       infinite loops).
+             const useArgument = (parser, text) => {
+                 parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                 parser.i = 0;
+                 if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                     throw new TexError('MaxMacroSub1',
+                     'MathJax maximum macro substitution count exceeded; ' +
+                     'is there a recursive macro call?');
+                 }
+             }
 
 
-            //      Create the command map for:
-            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
-            new CommandMap('Lwarp-macros', {
-                ifstar: 'IfstarFunction',
-                ifnextchar: 'IfnextcharFunction',
-                ifblank: 'IfblankFunction',
-                ifstrequal: 'IfstrequalFunction',
-                gsubstitute: 'GsubstituteFunction',
-                seteqnumber: 'SeteqnumberFunction'
-            }, {
-                //      This function implements an ifstar macro.
-                IfstarFunction(parser, name) {
-                    const resultstar = parser.GetArgument(name);
-                    const resultnostar = parser.GetArgument(name);
-                    const star = parser.GetStar();                      // true if there is a *
-                    useArgument(parser, star ? resultstar : resultnostar);
-                },
+             //       Create the command map for:
+             //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+             new CommandMap('Lwarp-macros', {
+                 ifstar: 'IfstarFunction',
+                 ifnextchar: 'IfnextcharFunction',
+                 ifblank: 'IfblankFunction',
+                 ifstrequal: 'IfstrequalFunction',
+                 gsubstitute: 'GsubstituteFunction',
+                 seteqnumber: 'SeteqnumberFunction'
+             }, {
+                 //      This function implements an ifstar macro.
+                 IfstarFunction(parser, name) {
+                     const resultstar = parser.GetArgument(name);
+                     const resultnostar = parser.GetArgument(name);
+                     const star = parser.GetStar();                        // true if there is a *
+                     useArgument(parser, star ? resultstar : resultnostar);
+                 },
 
 
-                //      This function implements an ifnextchar macro.
-                IfnextcharFunction(parser, name) {
-                    let whichchar = parser.GetArgument(name);
-                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
-                        // $ syntax highlighting
-                        whichchar = String.fromCodePoint(parseInt(whichchar));
-                    }
-                    const resultnextchar = parser.GetArgument(name);
-                    const resultnotnextchar = parser.GetArgument(name);
-                    const gotchar = (parser.GetNext() === whichchar);
-                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
-                },
+                 //      This function implements an ifnextchar macro.
+                 IfnextcharFunction(parser, name) {
+                     let whichchar = parser.GetArgument(name);
+                     if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                         // $ syntax highlighting
+                         whichchar = String.fromCodePoint(parseInt(whichchar));
+                     }
+                     const resultnextchar = parser.GetArgument(name);
+                     const resultnotnextchar = parser.GetArgument(name);
+                     const gotchar = (parser.GetNext() === whichchar);
+                     useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                 },
 
 
-                // This function implements an ifblank macro.
-                IfblankFunction(parser, name) {
-                    const blankarg = parser.GetArgument(name);
-                    const resultblank = parser.GetArgument(name);
-                    const resultnotblank = parser.GetArgument(name);
-                    const isblank = (blankarg.trim() == "");
-                    useArgument(parser, isblank ? resultblank : resultnotblank);
-                },
+                 // This function implements an ifblank macro.
+                 IfblankFunction(parser, name) {
+                     const blankarg = parser.GetArgument(name);
+                     const resultblank = parser.GetArgument(name);
+                     const resultnotblank = parser.GetArgument(name);
+                     const isblank = (blankarg.trim() == "");
+                     useArgument(parser, isblank ? resultblank : resultnotblank);
+                 },
 
 
-                // This function implements an ifstrequal macro.
-                IfstrequalFunction(parser, name) {
-                    const strequalfirst = parser.GetArgument(name);
-                    const strequalsecond = parser.GetArgument(name);
-                    const resultequal = parser.GetArgument(name);
-                    const resultnotequal = parser.GetArgument(name);
-                    const isequal = (strequalfirst == strequalsecond);
-                    useArgument(parser, isequal ? resultequal : resultnotequal);
-                },
+                 // This function implements an ifstrequal macro.
+                 IfstrequalFunction(parser, name) {
+                     const strequalfirst = parser.GetArgument(name);
+                     const strequalsecond = parser.GetArgument(name);
+                     const resultequal = parser.GetArgument(name);
+                     const resultnotequal = parser.GetArgument(name);
+                     const isequal = (strequalfirst == strequalsecond);
+                     useArgument(parser, isequal ? resultequal : resultnotequal);
+                 },
 
 
-                // This function implements a gsub macro.
-                GsubstituteFunction(parser, name) {
-                    const gsubfirst = parser.GetArgument(name);
-                    const gsubsecond = parser.GetArgument(name);
-                    const gsubthird = parser.GetArgument(name);
-                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
-                    useArgument(parser, gsubresult);
-                },
+                 // This function implements a gsub macro.
+                 GsubstituteFunction(parser, name) {
+                     const gsubfirst = parser.GetArgument(name);
+                     const gsubsecond = parser.GetArgument(name);
+                     const gsubthird = parser.GetArgument(name);
+                     let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                     useArgument(parser, gsubresult);
+                 },
 
 
-                //      This function modifies the equation numbers.
-                SeteqnumberFunction(parser, name) {
-                        //   Get the macro parameters
-                        const star = parser.GetStar();                    // true if there is a *
-                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
-                        const newsubequations = parser.GetArgument(name);    // the subequations argument
-                        const neweqsection = parser.GetArgument(name);    // the eq section argument
-                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
-                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
-                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
-                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
-                }
+                 //      This function modifies the equation numbers.
+                 SeteqnumberFunction(parser, name) {
+                         //   Get the macro parameters
+                         const star = parser.GetStar();                       // true if there is a *
+                         const optBrackets = parser.GetBrackets(name);        // contents of optional brackets
+                         const newsubequations = parser.GetArgument(name);       // the subequations argument
+                         const neweqsection = parser.GetArgument(name);       // the eq section argument
+                         const neweqnumber = parser.GetArgument(name);        // the eq number argument
+                         MathJax.config.subequations=newsubequations ;        // a string with boolean meaning
+                         MathJax.config.section=neweqsection ;                // a string with numeric meaning
+                         parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                 }
 
 
-            });
+             });
 
 
-            //      Create the Lwarp-macros package
-            Configuration.create('Lwarp-macros', {
-                handler: {macro: ['Lwarp-macros']}
-            });
+             //       Create the Lwarp-macros package
+             Configuration.create('Lwarp-macros', {
+                 handler: {macro: ['Lwarp-macros']}
+             });
 
 
-            MathJax.startup.defaultReady();
+             MathJax.startup.defaultReady();
 
 
-            // For forward references:
-            MathJax.startup.input[0].preFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        MathJax.config.subequations = math.inputData.recompile.subequations;
-                        MathJax.config.section = math.inputData.recompile.section;
-                }
-            });
-            MathJax.startup.input[0].postFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        math.inputData.recompile.subequations = MathJax.config.subequations;
-                        math.inputData.recompile.section = MathJax.config.section;
-                }
-            });
+             // For forward references:
+             MathJax.startup.input[0].preFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         MathJax.config.subequations = math.inputData.recompile.subequations;
+                         MathJax.config.section = math.inputData.recompile.section;
+                 }
+             });
+             MathJax.startup.input[0].postFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         math.inputData.recompile.subequations = MathJax.config.subequations;
+                         math.inputData.recompile.section = MathJax.config.section;
+                 }
+             });
 
 
-                // For \left, \right with unicode-math:
-                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
-                const {Symbol} = MathJax._.input.tex.Symbol;
-                const {MapHandler} = MathJax._.input.tex.MapHandler;
-                const delimiter = MapHandler.getMap('delimiter');
-                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
-                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
-                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
-                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
-                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
-                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
-                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
-                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
-                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
-                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
-                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
-                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
-                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
-                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
-                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
-                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
-                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
-                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
-                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
-                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
-                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
-                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
-                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
-                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
-                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
-                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
-                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
-                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
-                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
-                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
-                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
-                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
-                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
-                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
-                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
-                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
-                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
-                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
-                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
-        }        // ready
-    },          // startup
+                 // For \left, \right with unicode-math:
+                 const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                 const {Symbol} = MathJax._.input.tex.Symbol;
+                 const {MapHandler} = MathJax._.input.tex.MapHandler;
+                 const delimiter = MapHandler.getMap('delimiter');
+                 delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                 delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                 delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                 delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                 delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                 delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                 delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                 delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                 delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                 delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                 delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                 delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                 delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                 delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                 delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                 delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                 delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                 delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                 delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                 delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                 delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                 delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                 delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                 delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                 delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                 delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                 delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                 delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                 delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                 delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                 delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                 delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                 delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                 delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                 delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                 delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                 delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                 delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                 delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+         }       // ready
+    },           // startup
 
 
     tex: {
-        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
-        tags: "ams",
-                tagformat: {
-                        number: function (n) {
-                             if(MathJax.config.subequations==0)
-                                 return(MathJax.config.section + n);
-                             else
-                                 return(MathJax.config.section + String.fromCharCode(96+n));
-                        },
-                },
+         packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+         tags: "ams",
+                 tagformat: {
+                         number: function (n) {
+                              if(MathJax.config.subequations==0)
+                                     return(MathJax.config.section + n);
+                              else
+                                     return(MathJax.config.section + String.fromCharCode(96+n));
+                         },
+                 },
     }
 }
 </script>
 
 
 <script
-        id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+         id="MathJax-script"
+         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
 ></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre.programlisting").forEach(el => {
+    const rawText = el.textContent;
+    const code = document.createElement("code");
+    // Default to Lisp, only use Bash for actual terminal commands
+    code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+    code.textContent = rawText;
+    el.innerHTML = "";
+    el.appendChild(code);
+    hljs.highlightElement(code);
+  });
+});
+</script>
 </head>
 <body>
 
@@ -1132,7 +1118,7 @@ Home</a>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-55" class="tocsection" >
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -1278,58 +1264,6 @@ Home</a>
 
 \(\let \Vec \vec \)
 
-\(\require {mathtools}\)
-
-\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
-
-\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
-
-\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
-
-\(\newcommand {\simcolon }{\sim \vcentcolon }\)
-
-\(\newcommand {\Simcolon }{\sim \dblcolon }\)
-
-\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
-
-\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
-
-\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
-
-\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
-
-\(\newenvironment {crampedsubarray}[1]{}{}\)
-
-\(\newcommand {\smashoperator }[2][]{#2\limits }\)
-
-\(\newcommand {\SwapAboveDisplaySkip }{}\)
-
-\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
-
-\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
-
-\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
-
-\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
-
-\(\let \xlongleftarrow \xleftarrow \)
-
-\(\let \xlongrightarrow \xrightarrow \)
-
-\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
-
-\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
-
-\(\let \LWRorigshoveleft \shoveleft \)
-
-\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
-
-\(\let \LWRorigshoveright \shoveright \)
-
-\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
-
-\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
-
 </div>
 
 <!--
@@ -1403,14 +1337,14 @@ In this section, we will go over the basic usage of unbounded Multi-Producer Mul
 <li>
 <p>
 <span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >fl</span> when calling its functions.
 </p>
 <p>
 <span style="width:20pt; display:inline-block"><!----></span>For example: <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(fl:queue-push *work-queue* i)</span>
 </p>
 
@@ -1463,8 +1397,8 @@ architecture.
 
 <p>
 <b>Producers</b> A producer thread works by calling <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(queue-push *work-queue* item)</span>. Because the producer thread is lock-free, the procedure will never block a thread. An example of defining a producer:
 </p>
 <div class="figurecaption">
@@ -1481,17 +1415,17 @@ architecture.
 </div>
 
 <p>
-n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if
-you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-12"></a><sup>,</sup> <sup>2</sup>
+<i>n.b.,</i> It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases;
+however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.<sup>1</sup><a id="Manual-autopage-12"></a><sup>,</sup> <sup>2</sup>
 </p>
 
 <p>
 <b>Consumers</b> A consumer thread works by calling <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(queue-pop *work-queue*)</span>. This procedure does not return lisp conditions; instead, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >queue-pop</span> returns two specific values:
 </p>
 <ul class="enumerate" style="list-style-type:none">
@@ -1499,11 +1433,11 @@ you simply ran the example in a fresh REPL, you would risk locking up your entir
 <li>
 <p>
 <span class="listmarker">1.</span> The <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >item</span> itself or <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >NIL</span> if empty.
 </p>
 
@@ -1512,27 +1446,27 @@ you simply ran the example in a fresh REPL, you would risk locking up your entir
 
 <p>
 <span class="listmarker">2.</span> A <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >success</span> boolean, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >T</span> if an item was grabbed, <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >NIL</span> if the queue was empty.
 </p>
 </li>
 </ul>
 
 <p>
-n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
+<i>n.b.,</i> If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.<sup>3</sup>
 </p>
 
 <p>
 You must wrap the procedure in a <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >multiple-value-bind</span> to check if the pop was successful.
 </p>
 <div class="figurecaption">
@@ -1562,25 +1496,16 @@ You must wrap the procedure in a <span
 
 <a id="Manual-autopage-14"></a>
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->1.&#x202f;&#x202f;</span>This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
+<sup>1</sup>&nbsp;This is called “CPU Starvation”, which is when a procedure consumes 100&percnt; of a systems CPU core.
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->2.&#x202f;&#x202f;</span>Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state — hence, if we ran a loop from i to 1000 without sleep, most modern CPUs
-would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
+<sup>2</sup>&nbsp;Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state — hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would
+actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->3.&#x202f;&#x202f;</span>Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue — consequently, this tanks a systems performance.
+<sup>3</sup>&nbsp;Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue — consequently, this tanks a systems performance.
 </p>
 
 
@@ -1674,7 +1599,7 @@ Home</a></nav>
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual - API Reference</title>
+<title>cl-freelock Manual — API Reference</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -1696,208 +1621,227 @@ MathJax = {
     subequations: "0",
     section: "",
     loader: {
-        load: ['[tex]/tagformat', '[tex]/textmacros'],
+         load: ['[tex]/tagformat', '[tex]/textmacros'],
     },
     startup: {
-        ready() {
-            //      These would be replaced by import commands if you wanted to make
-            //      a proper extension.
-            const Configuration = MathJax._.input.tex.Configuration.Configuration;
-            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
-            const Macro = MathJax._.input.tex.Symbol.Macro;
-            const TexError = MathJax._.input.tex.TexError.default;
-            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
-            const expandable = MathJax._.util.Options.expandable;
+         ready() {
+             //       These would be replaced by import commands if you wanted to make
+             //       a proper extension.
+             const Configuration = MathJax._.input.tex.Configuration.Configuration;
+             const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+             const Macro = MathJax._.input.tex.Symbol.Macro;
+             const TexError = MathJax._.input.tex.TexError.default;
+             const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+             const expandable = MathJax._.util.Options.expandable;
 
 
-            //      Insert the replacement string into the TeX string, and check
-            //      that there haven't been too many maxro substitutions (prevents
-            //      infinite loops).
-            const useArgument = (parser, text) => {
-                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
-                parser.i = 0;
-                if (++parser.macroCount > parser.configuration.options.maxMacros) {
-                    throw new TexError('MaxMacroSub1',
-                    'MathJax maximum macro substitution count exceeded; ' +
-                    'is there a recursive macro call?');
-                }
-            }
+             //       Insert the replacement string into the TeX string, and check
+             //       that there haven't been too many maxro substitutions (prevents
+             //       infinite loops).
+             const useArgument = (parser, text) => {
+                 parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                 parser.i = 0;
+                 if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                     throw new TexError('MaxMacroSub1',
+                     'MathJax maximum macro substitution count exceeded; ' +
+                     'is there a recursive macro call?');
+                 }
+             }
 
 
-            //      Create the command map for:
-            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
-            new CommandMap('Lwarp-macros', {
-                ifstar: 'IfstarFunction',
-                ifnextchar: 'IfnextcharFunction',
-                ifblank: 'IfblankFunction',
-                ifstrequal: 'IfstrequalFunction',
-                gsubstitute: 'GsubstituteFunction',
-                seteqnumber: 'SeteqnumberFunction'
-            }, {
-                //      This function implements an ifstar macro.
-                IfstarFunction(parser, name) {
-                    const resultstar = parser.GetArgument(name);
-                    const resultnostar = parser.GetArgument(name);
-                    const star = parser.GetStar();                      // true if there is a *
-                    useArgument(parser, star ? resultstar : resultnostar);
-                },
+             //       Create the command map for:
+             //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+             new CommandMap('Lwarp-macros', {
+                 ifstar: 'IfstarFunction',
+                 ifnextchar: 'IfnextcharFunction',
+                 ifblank: 'IfblankFunction',
+                 ifstrequal: 'IfstrequalFunction',
+                 gsubstitute: 'GsubstituteFunction',
+                 seteqnumber: 'SeteqnumberFunction'
+             }, {
+                 //      This function implements an ifstar macro.
+                 IfstarFunction(parser, name) {
+                     const resultstar = parser.GetArgument(name);
+                     const resultnostar = parser.GetArgument(name);
+                     const star = parser.GetStar();                        // true if there is a *
+                     useArgument(parser, star ? resultstar : resultnostar);
+                 },
 
 
-                //      This function implements an ifnextchar macro.
-                IfnextcharFunction(parser, name) {
-                    let whichchar = parser.GetArgument(name);
-                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
-                        // $ syntax highlighting
-                        whichchar = String.fromCodePoint(parseInt(whichchar));
-                    }
-                    const resultnextchar = parser.GetArgument(name);
-                    const resultnotnextchar = parser.GetArgument(name);
-                    const gotchar = (parser.GetNext() === whichchar);
-                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
-                },
+                 //      This function implements an ifnextchar macro.
+                 IfnextcharFunction(parser, name) {
+                     let whichchar = parser.GetArgument(name);
+                     if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                         // $ syntax highlighting
+                         whichchar = String.fromCodePoint(parseInt(whichchar));
+                     }
+                     const resultnextchar = parser.GetArgument(name);
+                     const resultnotnextchar = parser.GetArgument(name);
+                     const gotchar = (parser.GetNext() === whichchar);
+                     useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                 },
 
 
-                // This function implements an ifblank macro.
-                IfblankFunction(parser, name) {
-                    const blankarg = parser.GetArgument(name);
-                    const resultblank = parser.GetArgument(name);
-                    const resultnotblank = parser.GetArgument(name);
-                    const isblank = (blankarg.trim() == "");
-                    useArgument(parser, isblank ? resultblank : resultnotblank);
-                },
+                 // This function implements an ifblank macro.
+                 IfblankFunction(parser, name) {
+                     const blankarg = parser.GetArgument(name);
+                     const resultblank = parser.GetArgument(name);
+                     const resultnotblank = parser.GetArgument(name);
+                     const isblank = (blankarg.trim() == "");
+                     useArgument(parser, isblank ? resultblank : resultnotblank);
+                 },
 
 
-                // This function implements an ifstrequal macro.
-                IfstrequalFunction(parser, name) {
-                    const strequalfirst = parser.GetArgument(name);
-                    const strequalsecond = parser.GetArgument(name);
-                    const resultequal = parser.GetArgument(name);
-                    const resultnotequal = parser.GetArgument(name);
-                    const isequal = (strequalfirst == strequalsecond);
-                    useArgument(parser, isequal ? resultequal : resultnotequal);
-                },
+                 // This function implements an ifstrequal macro.
+                 IfstrequalFunction(parser, name) {
+                     const strequalfirst = parser.GetArgument(name);
+                     const strequalsecond = parser.GetArgument(name);
+                     const resultequal = parser.GetArgument(name);
+                     const resultnotequal = parser.GetArgument(name);
+                     const isequal = (strequalfirst == strequalsecond);
+                     useArgument(parser, isequal ? resultequal : resultnotequal);
+                 },
 
 
-                // This function implements a gsub macro.
-                GsubstituteFunction(parser, name) {
-                    const gsubfirst = parser.GetArgument(name);
-                    const gsubsecond = parser.GetArgument(name);
-                    const gsubthird = parser.GetArgument(name);
-                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
-                    useArgument(parser, gsubresult);
-                },
+                 // This function implements a gsub macro.
+                 GsubstituteFunction(parser, name) {
+                     const gsubfirst = parser.GetArgument(name);
+                     const gsubsecond = parser.GetArgument(name);
+                     const gsubthird = parser.GetArgument(name);
+                     let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                     useArgument(parser, gsubresult);
+                 },
 
 
-                //      This function modifies the equation numbers.
-                SeteqnumberFunction(parser, name) {
-                        //   Get the macro parameters
-                        const star = parser.GetStar();                    // true if there is a *
-                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
-                        const newsubequations = parser.GetArgument(name);    // the subequations argument
-                        const neweqsection = parser.GetArgument(name);    // the eq section argument
-                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
-                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
-                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
-                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
-                }
+                 //      This function modifies the equation numbers.
+                 SeteqnumberFunction(parser, name) {
+                         //   Get the macro parameters
+                         const star = parser.GetStar();                       // true if there is a *
+                         const optBrackets = parser.GetBrackets(name);        // contents of optional brackets
+                         const newsubequations = parser.GetArgument(name);       // the subequations argument
+                         const neweqsection = parser.GetArgument(name);       // the eq section argument
+                         const neweqnumber = parser.GetArgument(name);        // the eq number argument
+                         MathJax.config.subequations=newsubequations ;        // a string with boolean meaning
+                         MathJax.config.section=neweqsection ;                // a string with numeric meaning
+                         parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                 }
 
 
-            });
+             });
 
 
-            //      Create the Lwarp-macros package
-            Configuration.create('Lwarp-macros', {
-                handler: {macro: ['Lwarp-macros']}
-            });
+             //       Create the Lwarp-macros package
+             Configuration.create('Lwarp-macros', {
+                 handler: {macro: ['Lwarp-macros']}
+             });
 
 
-            MathJax.startup.defaultReady();
+             MathJax.startup.defaultReady();
 
 
-            // For forward references:
-            MathJax.startup.input[0].preFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        MathJax.config.subequations = math.inputData.recompile.subequations;
-                        MathJax.config.section = math.inputData.recompile.section;
-                }
-            });
-            MathJax.startup.input[0].postFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        math.inputData.recompile.subequations = MathJax.config.subequations;
-                        math.inputData.recompile.section = MathJax.config.section;
-                }
-            });
+             // For forward references:
+             MathJax.startup.input[0].preFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         MathJax.config.subequations = math.inputData.recompile.subequations;
+                         MathJax.config.section = math.inputData.recompile.section;
+                 }
+             });
+             MathJax.startup.input[0].postFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         math.inputData.recompile.subequations = MathJax.config.subequations;
+                         math.inputData.recompile.section = MathJax.config.section;
+                 }
+             });
 
 
-                // For \left, \right with unicode-math:
-                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
-                const {Symbol} = MathJax._.input.tex.Symbol;
-                const {MapHandler} = MathJax._.input.tex.MapHandler;
-                const delimiter = MapHandler.getMap('delimiter');
-                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
-                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
-                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
-                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
-                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
-                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
-                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
-                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
-                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
-                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
-                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
-                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
-                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
-                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
-                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
-                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
-                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
-                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
-                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
-                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
-                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
-                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
-                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
-                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
-                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
-                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
-                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
-                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
-                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
-                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
-                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
-                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
-                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
-                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
-                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
-                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
-                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
-                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
-                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
-        }        // ready
-    },          // startup
+                 // For \left, \right with unicode-math:
+                 const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                 const {Symbol} = MathJax._.input.tex.Symbol;
+                 const {MapHandler} = MathJax._.input.tex.MapHandler;
+                 const delimiter = MapHandler.getMap('delimiter');
+                 delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                 delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                 delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                 delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                 delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                 delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                 delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                 delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                 delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                 delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                 delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                 delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                 delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                 delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                 delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                 delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                 delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                 delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                 delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                 delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                 delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                 delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                 delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                 delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                 delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                 delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                 delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                 delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                 delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                 delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                 delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                 delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                 delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                 delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                 delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                 delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                 delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                 delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                 delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+         }       // ready
+    },           // startup
 
 
     tex: {
-        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
-        tags: "ams",
-                tagformat: {
-                        number: function (n) {
-                             if(MathJax.config.subequations==0)
-                                 return(MathJax.config.section + n);
-                             else
-                                 return(MathJax.config.section + String.fromCharCode(96+n));
-                        },
-                },
+         packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+         tags: "ams",
+                 tagformat: {
+                         number: function (n) {
+                              if(MathJax.config.subequations==0)
+                                     return(MathJax.config.section + n);
+                              else
+                                     return(MathJax.config.section + String.fromCharCode(96+n));
+                         },
+                 },
     }
 }
 </script>
 
 
 <script
-        id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+         id="MathJax-script"
+         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
 ></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre.programlisting").forEach(el => {
+    const rawText = el.textContent;
+    const code = document.createElement("code");
+    // Default to Lisp, only use Bash for actual terminal commands
+    code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+    code.textContent = rawText;
+    el.innerHTML = "";
+    el.appendChild(code);
+    hljs.highlightElement(code);
+  });
+});
+</script>
 </head>
 <body>
 
@@ -1946,7 +1890,7 @@ Home</a>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-55" class="tocsection" >
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -2092,58 +2036,6 @@ Home</a>
 
 \(\let \Vec \vec \)
 
-\(\require {mathtools}\)
-
-\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
-
-\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
-
-\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
-
-\(\newcommand {\simcolon }{\sim \vcentcolon }\)
-
-\(\newcommand {\Simcolon }{\sim \dblcolon }\)
-
-\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
-
-\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
-
-\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
-
-\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
-
-\(\newenvironment {crampedsubarray}[1]{}{}\)
-
-\(\newcommand {\smashoperator }[2][]{#2\limits }\)
-
-\(\newcommand {\SwapAboveDisplaySkip }{}\)
-
-\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
-
-\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
-
-\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
-
-\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
-
-\(\let \xlongleftarrow \xleftarrow \)
-
-\(\let \xlongrightarrow \xrightarrow \)
-
-\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
-
-\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
-
-\(\let \LWRorigshoveleft \shoveleft \)
-
-\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
-
-\(\let \LWRorigshoveright \shoveright \)
-
-\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
-
-\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
-
 </div>
 
 <!--
@@ -2167,14 +2059,14 @@ handling, and atomic primitives.<sup>4</sup>
 <li>
 <p>
 <span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >fl</span> when calling its functions.
 </p>
 <p>
 <span style="width:20pt; display:inline-block"><!----></span>For example: <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(fl:queue-push *work-queue* i)</span>
 </p>
 
@@ -2191,10 +2083,7 @@ documentation will be quite minor.
 
 <a id="Manual-autopage-23"></a>
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->4.&#x202f;&#x202f;</span>n.b, The difference between atomic primitives and atomic operations is a matter concerning layers of abstraction—operations are composed of combinations of primitives and non-primitive procedures.
+<sup>4</sup>&nbsp;<i>n.b.,</i> The difference between atomic primitives and atomic operations is a matter concerning layers of abstraction—operations are composed of combinations of primitives and non-primitive procedures.
 </p>
 
 
@@ -2215,8 +2104,8 @@ documentation will be quite minor.
 <b>Signature:</b><br />
 <br />
 <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >atomic-ref</span>
 </p>
 
@@ -2236,8 +2125,8 @@ A structure which holds a value that can be atomically updated–it is the found
 <b>Signature:</b><br />
 <br />
 <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(make-atomic-ref value)</span>
 </p>
 
@@ -2245,11 +2134,11 @@ A structure which holds a value that can be atomically updated–it is the found
 <b>Description:</b><br />
 <br />
 Constructor for the <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >atomic-ref</span> structure—creates a new atomic reference that holds the provided <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >value</span>.
 </p>
 <!--
@@ -2263,8 +2152,8 @@ Constructor for the <span
 <b>Signature:</b><br />
 <br />
 <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(atomic-ref-value atomic-ref)</span>
 </p>
 
@@ -2272,33 +2161,27 @@ Constructor for the <span
 <b>Description:</b><br />
 <br />
 Accessor for the value held within an <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >atomic-ref</span>—used internally by Compare and Swap (CAS) operations.<sup>5</sup><sup>,</sup> <sup>6</sup>
 </p>
 <div role="note" class="footnotes">
 
 <a id="Manual-autopage-28"></a>
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->5.&#x202f;&#x202f;</span>An accessor (i.e., A structure or slot accessor) is a procedure which admits access to an object’s internal state.
+<sup>5</sup>&nbsp;An accessor (<i>i.e.,</i> A structure or slot accessor) is a procedure which admits access to an object’s internal state.
 </p>
 
 <p>
-<span
-     class="makebox"
-     style="display:inline-block ; width:23pt ; text-align:right ; "
->6.&#x202f;&#x202f;</span>n.b., <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+<sup>6</sup>&nbsp;<i>n.b.,</i> <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >atomic-ref-value</span> is internally a <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >defstruct</span>. In <i>Common Lisp</i>, the use of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >defstruct</span> acts as both a getter and setter by the implementation’s compiler. A getter is a procedure which specifically returns a read-only value.
 </p>
 
@@ -2315,8 +2198,8 @@ Accessor for the value held within an <span
 <b>Signature:</b><br />
 <br />
 <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(cas place old new)</span>
 </p>
 
@@ -2324,17 +2207,17 @@ Accessor for the value held within an <span
 <b>Description:</b><br />
 <br />
 A CAS macro—atomically stored <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >new</span> in <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >place</span> if the current value of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >place</span> is equal to <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >old</span>.
 </p>
 
@@ -2342,8 +2225,8 @@ A CAS macro—atomically stored <span
 <b>Returns:</b><br />
 <br />
 The old value of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >place</span>.
 </p>
 <!--
@@ -2357,8 +2240,8 @@ The old value of <span
 <b>Signature:</b><br />
 <br />
 <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(atomic-incf atomic-ref &amp;optional (delta 1)</span>
 </p>
 
@@ -2366,11 +2249,11 @@ The old value of <span
 <b>Description:</b><br />
 <br />
 Atomically increments the value of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >atomic-ref</span> by <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >delta</span>. It is implemented via a CAS loop to facilitate compatibility across different <i>Lisp</i> implementations.
 </p>
 
@@ -2389,7 +2272,10 @@ The new incremented value.
 <p>
 <b>Signature:</b><br />
 <br />
-(memory-barrier)
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>(memory-barrier)</span>
 </p>
 
 <p>
@@ -2412,7 +2298,10 @@ Executes a memory barrier—ensures that all memory operations before the barrie
 <p>
 <b>Signature:</b><br />
 <br />
-queue
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>queue</span>
 </p>
 
 <p>
@@ -2430,7 +2319,10 @@ A lock-free, multi-producer, multi-consumer (MPMC) unbounded queue class based o
 <p>
 <b>Signature:</b><br />
 <br />
-(make-queue)
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>(make-queue)</span>
 </p>
 
 <p>
@@ -2443,8 +2335,8 @@ Creates an unbounded queue instance.
 <b>Returns:</b><br />
 <br />
 A fresh <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >queue</span> object—initialized with a dummy node.
 </p>
 
@@ -2457,7 +2349,7 @@ A fresh <span
 
 </div>
 <pre class="programlisting">
-(defparameter *work-queue* (make-queue))
+(defparameter *work-queue* (fl:make-queue))
 </pre>
 
     <div class="figurecaption">
@@ -2472,13 +2364,28 @@ A fresh <span
 <p>
 <b>Signature:</b><br />
 <br />
-
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>(queue-push queue object)</span>
 </p>
 
 <p>
 <b>Description:</b><br />
 <br />
+Pushes an <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>object</span> into the unbounded queue.
+</p>
 
+<p>
+<b>Returns:</b><br />
+<br />
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>T</span> upon a successful push.
 </p>
 <!--
 ...... subsubsection QUEUE-POP ......
@@ -2490,13 +2397,56 @@ A fresh <span
 <p>
 <b>Signature:</b><br />
 <br />
-
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>(queue-pop queue)</span>
 </p>
 
 <p>
 <b>Description:</b><br />
 <br />
+Pops an object from the unbounded queue.
+</p>
 
+<p>
+<b>Returns:</b><br />
+<br />
+
+</p>
+<ul class="enumerate" style="list-style-type:none">
+
+<li>
+<p>
+<span class="listmarker">1.</span> The <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>object</span> itself, or <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>NIL</span> if the queue is empty.
+</p>
+
+</li>
+<li>
+
+<p>
+<span class="listmarker">2.</span> A success boolean, <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>T</span> if an item was grabbed, <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>NIL</span> if the queue was empty.
+</p>
+</li>
+</ul>
+
+<p>
+<i>n.b.,</i> These two values must be captured with the <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>multiple-value-bind</span>.
 </p>
 <!--
 ...... subsubsection QUEUE-EMPTY-P ......
@@ -2508,24 +2458,56 @@ A fresh <span
 <p>
 <b>Signature:</b><br />
 <br />
-
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>(queue-empty-p queue)</span>
 </p>
 
 <p>
 <b>Description:</b><br />
 <br />
-
+Checks if the unbounded queue is empty.
 </p>
+
+<p>
+<b>Returns:</b><br />
+<br />
+<span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>T</span> if empty, and <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>NIL</span> if not.
+</p>
+
+<p>
+<i>Warning</i>: In a highly concurrent environment, the state of a queue can change immediately after this call returns, so do not rely on it for flow control. If needed, it is best to rely on the success boolean returned by <span
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
+>queue-pop</span>.<sup>7</sup>
+</p>
+<div role="note" class="footnotes">
+
+<a id="Manual-autopage-39"></a>
+<p>
+<sup>7</sup>&nbsp;This is called a Time-of-Check to Time-of-Use (TOCTOU) race condition. This is a race condition that specifically occurs when multiple threads or processes access shared data through concurrent means, but
+without adequate synchronization. <i>n.b.,</i> TOCTOU race conditions are exploitable, and thus are security vulnerabilities. MITRE Corporation <a href="Performance-Guide.html#LWR-ht-cite.0@cwe367">2006</a>
+</p>
+
+
+</div>
 <!--
 ...... subsection MPMC Bounded Queue ......
 -->
-<h5 id="autosec-39"><span class="sectionnumber">2.3&#x2003;</span>MPMC Bounded Queue</h5>
-<a id="Manual-autopage-39"></a>
+<h5 id="autosec-40"><span class="sectionnumber">2.3&#x2003;</span>MPMC Bounded Queue</h5>
+<a id="Manual-autopage-40"></a>
 <!--
 ...... subsubsection BOUNDED-QUEUE ......
 -->
-<h6 id="autosec-40"><span class="sectionnumber">2.3.1&#x2003;</span>BOUNDED-QUEUE</h6>
-<a id="Manual-autopage-40"></a>
+<h6 id="autosec-41"><span class="sectionnumber">2.3.1&#x2003;</span>BOUNDED-QUEUE</h6>
+<a id="Manual-autopage-41"></a>
 
 
 <p>
@@ -2542,8 +2524,8 @@ A fresh <span
 <!--
 ...... subsubsection MAKE-BOUNDED-QUEUE ......
 -->
-<h6 id="autosec-41"><span class="sectionnumber">2.3.2&#x2003;</span>MAKE-BOUNDED-QUEUE</h6>
-<a id="Manual-autopage-41"></a>
+<h6 id="autosec-42"><span class="sectionnumber">2.3.2&#x2003;</span>MAKE-BOUNDED-QUEUE</h6>
+<a id="Manual-autopage-42"></a>
 
 
 <p>
@@ -2560,8 +2542,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-CAPACITY ......
 -->
-<h6 id="autosec-42"><span class="sectionnumber">2.3.3&#x2003;</span>BOUNDED-QUEUE-CAPACITY</h6>
-<a id="Manual-autopage-42"></a>
+<h6 id="autosec-43"><span class="sectionnumber">2.3.3&#x2003;</span>BOUNDED-QUEUE-CAPACITY</h6>
+<a id="Manual-autopage-43"></a>
 
 
 <p>
@@ -2578,8 +2560,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-PUSH ......
 -->
-<h6 id="autosec-43"><span class="sectionnumber">2.3.4&#x2003;</span>BOUNDED-QUEUE-PUSH</h6>
-<a id="Manual-autopage-43"></a>
+<h6 id="autosec-44"><span class="sectionnumber">2.3.4&#x2003;</span>BOUNDED-QUEUE-PUSH</h6>
+<a id="Manual-autopage-44"></a>
 
 
 <p>
@@ -2596,8 +2578,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-POP ......
 -->
-<h6 id="autosec-44"><span class="sectionnumber">2.3.5&#x2003;</span>BOUNDED-QUEUE-POP</h6>
-<a id="Manual-autopage-44"></a>
+<h6 id="autosec-45"><span class="sectionnumber">2.3.5&#x2003;</span>BOUNDED-QUEUE-POP</h6>
+<a id="Manual-autopage-45"></a>
 
 
 <p>
@@ -2614,8 +2596,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-EMPTY-P ......
 -->
-<h6 id="autosec-45"><span class="sectionnumber">2.3.6&#x2003;</span>BOUNDED-QUEUE-EMPTY-P</h6>
-<a id="Manual-autopage-45"></a>
+<h6 id="autosec-46"><span class="sectionnumber">2.3.6&#x2003;</span>BOUNDED-QUEUE-EMPTY-P</h6>
+<a id="Manual-autopage-46"></a>
 
 
 <p>
@@ -2632,8 +2614,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-FULL-P ......
 -->
-<h6 id="autosec-46"><span class="sectionnumber">2.3.7&#x2003;</span>BOUNDED-QUEUE-FULL-P</h6>
-<a id="Manual-autopage-46"></a>
+<h6 id="autosec-47"><span class="sectionnumber">2.3.7&#x2003;</span>BOUNDED-QUEUE-FULL-P</h6>
+<a id="Manual-autopage-47"></a>
 
 
 <p>
@@ -2650,8 +2632,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-PUSH-BATCH ......
 -->
-<h6 id="autosec-47"><span class="sectionnumber">2.3.8&#x2003;</span>BOUNDED-QUEUE-PUSH-BATCH</h6>
-<a id="Manual-autopage-47"></a>
+<h6 id="autosec-48"><span class="sectionnumber">2.3.8&#x2003;</span>BOUNDED-QUEUE-PUSH-BATCH</h6>
+<a id="Manual-autopage-48"></a>
 
 
 <p>
@@ -2668,8 +2650,8 @@ A fresh <span
 <!--
 ...... subsubsection BOUNDED-QUEUE-POP-BATCH ......
 -->
-<h6 id="autosec-48"><span class="sectionnumber">2.3.9&#x2003;</span>BOUNDED-QUEUE-POP-BATCH</h6>
-<a id="Manual-autopage-48"></a>
+<h6 id="autosec-49"><span class="sectionnumber">2.3.9&#x2003;</span>BOUNDED-QUEUE-POP-BATCH</h6>
+<a id="Manual-autopage-49"></a>
 
 
 <p>
@@ -2686,13 +2668,13 @@ A fresh <span
 <!--
 ...... subsection SPSC Bounded Queue ......
 -->
-<h5 id="autosec-49"><span class="sectionnumber">2.4&#x2003;</span>SPSC Bounded Queue</h5>
-<a id="Manual-autopage-49"></a>
+<h5 id="autosec-50"><span class="sectionnumber">2.4&#x2003;</span>SPSC Bounded Queue</h5>
+<a id="Manual-autopage-50"></a>
 <!--
 ...... subsubsection SPSC-QUEUE ......
 -->
-<h6 id="autosec-50"><span class="sectionnumber">2.4.1&#x2003;</span>SPSC-QUEUE</h6>
-<a id="Manual-autopage-50"></a>
+<h6 id="autosec-51"><span class="sectionnumber">2.4.1&#x2003;</span>SPSC-QUEUE</h6>
+<a id="Manual-autopage-51"></a>
 
 
 <p>
@@ -2709,8 +2691,8 @@ A fresh <span
 <!--
 ...... subsubsection MAKE-SPSC-QUEUE ......
 -->
-<h6 id="autosec-51"><span class="sectionnumber">2.4.2&#x2003;</span>MAKE-SPSC-QUEUE</h6>
-<a id="Manual-autopage-51"></a>
+<h6 id="autosec-52"><span class="sectionnumber">2.4.2&#x2003;</span>MAKE-SPSC-QUEUE</h6>
+<a id="Manual-autopage-52"></a>
 
 
 <p>
@@ -2727,8 +2709,8 @@ A fresh <span
 <!--
 ...... subsubsection SPSC-PUSH ......
 -->
-<h6 id="autosec-52"><span class="sectionnumber">2.4.3&#x2003;</span>SPSC-PUSH</h6>
-<a id="Manual-autopage-52"></a>
+<h6 id="autosec-53"><span class="sectionnumber">2.4.3&#x2003;</span>SPSC-PUSH</h6>
+<a id="Manual-autopage-53"></a>
 
 
 <p>
@@ -2745,8 +2727,8 @@ A fresh <span
 <!--
 ...... subsubsection SPSC-POP ......
 -->
-<h6 id="autosec-53"><span class="sectionnumber">2.4.4&#x2003;</span>SPSC-POP</h6>
-<a id="Manual-autopage-53"></a>
+<h6 id="autosec-54"><span class="sectionnumber">2.4.4&#x2003;</span>SPSC-POP</h6>
+<a id="Manual-autopage-54"></a>
 
 
 <p>
@@ -2780,7 +2762,7 @@ Home</a></nav>
 <meta charset="UTF-8" />
 <meta name="generator" content="LaTeX Lwarp package" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>cl-freelock Manual - Performance Guide</title>
+<title>cl-freelock Manual — Performance Guide</title>
 <link rel="stylesheet" type="text/css" href="lwarp.css" />
 
 <script>
@@ -2802,213 +2784,232 @@ MathJax = {
     subequations: "0",
     section: "",
     loader: {
-        load: ['[tex]/tagformat', '[tex]/textmacros'],
+         load: ['[tex]/tagformat', '[tex]/textmacros'],
     },
     startup: {
-        ready() {
-            //      These would be replaced by import commands if you wanted to make
-            //      a proper extension.
-            const Configuration = MathJax._.input.tex.Configuration.Configuration;
-            const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
-            const Macro = MathJax._.input.tex.Symbol.Macro;
-            const TexError = MathJax._.input.tex.TexError.default;
-            const ParseUtil = MathJax._.input.tex.ParseUtil.default;
-            const expandable = MathJax._.util.Options.expandable;
+         ready() {
+             //       These would be replaced by import commands if you wanted to make
+             //       a proper extension.
+             const Configuration = MathJax._.input.tex.Configuration.Configuration;
+             const CommandMap = MathJax._.input.tex.SymbolMap.CommandMap;
+             const Macro = MathJax._.input.tex.Symbol.Macro;
+             const TexError = MathJax._.input.tex.TexError.default;
+             const ParseUtil = MathJax._.input.tex.ParseUtil.default;
+             const expandable = MathJax._.util.Options.expandable;
 
 
-            //      Insert the replacement string into the TeX string, and check
-            //      that there haven't been too many maxro substitutions (prevents
-            //      infinite loops).
-            const useArgument = (parser, text) => {
-                parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
-                parser.i = 0;
-                if (++parser.macroCount > parser.configuration.options.maxMacros) {
-                    throw new TexError('MaxMacroSub1',
-                    'MathJax maximum macro substitution count exceeded; ' +
-                    'is there a recursive macro call?');
-                }
-            }
+             //       Insert the replacement string into the TeX string, and check
+             //       that there haven't been too many maxro substitutions (prevents
+             //       infinite loops).
+             const useArgument = (parser, text) => {
+                 parser.string = ParseUtil.addArgs(parser, text, parser.string.slice(parser.i));
+                 parser.i = 0;
+                 if (++parser.macroCount > parser.configuration.options.maxMacros) {
+                     throw new TexError('MaxMacroSub1',
+                     'MathJax maximum macro substitution count exceeded; ' +
+                     'is there a recursive macro call?');
+                 }
+             }
 
 
-            //      Create the command map for:
-            //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
-            new CommandMap('Lwarp-macros', {
-                ifstar: 'IfstarFunction',
-                ifnextchar: 'IfnextcharFunction',
-                ifblank: 'IfblankFunction',
-                ifstrequal: 'IfstrequalFunction',
-                gsubstitute: 'GsubstituteFunction',
-                seteqnumber: 'SeteqnumberFunction'
-            }, {
-                //      This function implements an ifstar macro.
-                IfstarFunction(parser, name) {
-                    const resultstar = parser.GetArgument(name);
-                    const resultnostar = parser.GetArgument(name);
-                    const star = parser.GetStar();                      // true if there is a *
-                    useArgument(parser, star ? resultstar : resultnostar);
-                },
+             //       Create the command map for:
+             //          \ifstar, \ifnextchar, \ifblank, \ifstrequal, \gsub, \seteqnumber
+             new CommandMap('Lwarp-macros', {
+                 ifstar: 'IfstarFunction',
+                 ifnextchar: 'IfnextcharFunction',
+                 ifblank: 'IfblankFunction',
+                 ifstrequal: 'IfstrequalFunction',
+                 gsubstitute: 'GsubstituteFunction',
+                 seteqnumber: 'SeteqnumberFunction'
+             }, {
+                 //      This function implements an ifstar macro.
+                 IfstarFunction(parser, name) {
+                     const resultstar = parser.GetArgument(name);
+                     const resultnostar = parser.GetArgument(name);
+                     const star = parser.GetStar();                        // true if there is a *
+                     useArgument(parser, star ? resultstar : resultnostar);
+                 },
 
 
-                //      This function implements an ifnextchar macro.
-                IfnextcharFunction(parser, name) {
-                    let whichchar = parser.GetArgument(name);
-                    if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
-                        // $ syntax highlighting
-                        whichchar = String.fromCodePoint(parseInt(whichchar));
-                    }
-                    const resultnextchar = parser.GetArgument(name);
-                    const resultnotnextchar = parser.GetArgument(name);
-                    const gotchar = (parser.GetNext() === whichchar);
-                    useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
-                },
+                 //      This function implements an ifnextchar macro.
+                 IfnextcharFunction(parser, name) {
+                     let whichchar = parser.GetArgument(name);
+                     if (whichchar.match(/^(?:0x[0-9A-F]+|[0-9]+)$/i)) {
+                         // $ syntax highlighting
+                         whichchar = String.fromCodePoint(parseInt(whichchar));
+                     }
+                     const resultnextchar = parser.GetArgument(name);
+                     const resultnotnextchar = parser.GetArgument(name);
+                     const gotchar = (parser.GetNext() === whichchar);
+                     useArgument(parser, gotchar ? resultnextchar : resultnotnextchar);
+                 },
 
 
-                // This function implements an ifblank macro.
-                IfblankFunction(parser, name) {
-                    const blankarg = parser.GetArgument(name);
-                    const resultblank = parser.GetArgument(name);
-                    const resultnotblank = parser.GetArgument(name);
-                    const isblank = (blankarg.trim() == "");
-                    useArgument(parser, isblank ? resultblank : resultnotblank);
-                },
+                 // This function implements an ifblank macro.
+                 IfblankFunction(parser, name) {
+                     const blankarg = parser.GetArgument(name);
+                     const resultblank = parser.GetArgument(name);
+                     const resultnotblank = parser.GetArgument(name);
+                     const isblank = (blankarg.trim() == "");
+                     useArgument(parser, isblank ? resultblank : resultnotblank);
+                 },
 
 
-                // This function implements an ifstrequal macro.
-                IfstrequalFunction(parser, name) {
-                    const strequalfirst = parser.GetArgument(name);
-                    const strequalsecond = parser.GetArgument(name);
-                    const resultequal = parser.GetArgument(name);
-                    const resultnotequal = parser.GetArgument(name);
-                    const isequal = (strequalfirst == strequalsecond);
-                    useArgument(parser, isequal ? resultequal : resultnotequal);
-                },
+                 // This function implements an ifstrequal macro.
+                 IfstrequalFunction(parser, name) {
+                     const strequalfirst = parser.GetArgument(name);
+                     const strequalsecond = parser.GetArgument(name);
+                     const resultequal = parser.GetArgument(name);
+                     const resultnotequal = parser.GetArgument(name);
+                     const isequal = (strequalfirst == strequalsecond);
+                     useArgument(parser, isequal ? resultequal : resultnotequal);
+                 },
 
 
-                // This function implements a gsub macro.
-                GsubstituteFunction(parser, name) {
-                    const gsubfirst = parser.GetArgument(name);
-                    const gsubsecond = parser.GetArgument(name);
-                    const gsubthird = parser.GetArgument(name);
-                    let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
-                    useArgument(parser, gsubresult);
-                },
+                 // This function implements a gsub macro.
+                 GsubstituteFunction(parser, name) {
+                     const gsubfirst = parser.GetArgument(name);
+                     const gsubsecond = parser.GetArgument(name);
+                     const gsubthird = parser.GetArgument(name);
+                     let gsubresult=gsubfirst.replace(gsubsecond, gsubthird);
+                     useArgument(parser, gsubresult);
+                 },
 
 
-                //      This function modifies the equation numbers.
-                SeteqnumberFunction(parser, name) {
-                        //   Get the macro parameters
-                        const star = parser.GetStar();                    // true if there is a *
-                        const optBrackets = parser.GetBrackets(name);     // contents of optional brackets
-                        const newsubequations = parser.GetArgument(name);    // the subequations argument
-                        const neweqsection = parser.GetArgument(name);    // the eq section argument
-                        const neweqnumber = parser.GetArgument(name);     // the eq number argument
-                        MathJax.config.subequations=newsubequations ;     // a string with boolean meaning
-                        MathJax.config.section=neweqsection ;             // a string with numeric meaning
-                        parser.tags.counter = parser.tags.allCounter = neweqnumber ;
-                }
+                 //      This function modifies the equation numbers.
+                 SeteqnumberFunction(parser, name) {
+                         //   Get the macro parameters
+                         const star = parser.GetStar();                       // true if there is a *
+                         const optBrackets = parser.GetBrackets(name);        // contents of optional brackets
+                         const newsubequations = parser.GetArgument(name);       // the subequations argument
+                         const neweqsection = parser.GetArgument(name);       // the eq section argument
+                         const neweqnumber = parser.GetArgument(name);        // the eq number argument
+                         MathJax.config.subequations=newsubequations ;        // a string with boolean meaning
+                         MathJax.config.section=neweqsection ;                // a string with numeric meaning
+                         parser.tags.counter = parser.tags.allCounter = neweqnumber ;
+                 }
 
 
-            });
+             });
 
 
-            //      Create the Lwarp-macros package
-            Configuration.create('Lwarp-macros', {
-                handler: {macro: ['Lwarp-macros']}
-            });
+             //       Create the Lwarp-macros package
+             Configuration.create('Lwarp-macros', {
+                 handler: {macro: ['Lwarp-macros']}
+             });
 
 
-            MathJax.startup.defaultReady();
+             MathJax.startup.defaultReady();
 
 
-            // For forward references:
-            MathJax.startup.input[0].preFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        MathJax.config.subequations = math.inputData.recompile.subequations;
-                        MathJax.config.section = math.inputData.recompile.section;
-                }
-            });
-            MathJax.startup.input[0].postFilters.add(({math}) => {
-                if (math.inputData.recompile){
-                        math.inputData.recompile.subequations = MathJax.config.subequations;
-                        math.inputData.recompile.section = MathJax.config.section;
-                }
-            });
+             // For forward references:
+             MathJax.startup.input[0].preFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         MathJax.config.subequations = math.inputData.recompile.subequations;
+                         MathJax.config.section = math.inputData.recompile.section;
+                 }
+             });
+             MathJax.startup.input[0].postFilters.add(({math}) => {
+                 if (math.inputData.recompile){
+                         math.inputData.recompile.subequations = MathJax.config.subequations;
+                         math.inputData.recompile.section = MathJax.config.section;
+                 }
+             });
 
 
-                // For \left, \right with unicode-math:
-                const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
-                const {Symbol} = MathJax._.input.tex.Symbol;
-                const {MapHandler} = MathJax._.input.tex.MapHandler;
-                const delimiter = MapHandler.getMap('delimiter');
-                delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
-                delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
-                delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
-                delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
-                delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
-                delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
-                delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
-                delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
-                delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
-                delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
-                delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
-                delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
-                delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
-                delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
-                delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
-                delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
-                delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
-                delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
-                delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
-                delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
-                delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
-                delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
-                delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
-                delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
-                delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
-                delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
-                delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
-                delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
-                delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
-                delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
-                delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
-                delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
-                delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
-                delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
-                delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
-                delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
-                delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
-                delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
-                delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
-        }        // ready
-    },          // startup
+                 // For \left, \right with unicode-math:
+                 const {DelimiterMap} = MathJax._.input.tex.SymbolMap;
+                 const {Symbol} = MathJax._.input.tex.Symbol;
+                 const {MapHandler} = MathJax._.input.tex.MapHandler;
+                 const delimiter = MapHandler.getMap('delimiter');
+                 delimiter.add('\\lBrack', new Symbol('\\lBrack', '\u27E6'));
+                 delimiter.add('\\rBrack', new Symbol('\\rBrack', '\u27E7'));
+                 delimiter.add('\\lAngle', new Symbol('\\lAngle', '\u27EA'));
+                 delimiter.add('\\rAngle', new Symbol('\\rAngle', '\u27EB'));
+                 delimiter.add('\\lbrbrak', new Symbol('\\lbrbrak', '\u2772'));
+                 delimiter.add('\\rbrbrak', new Symbol('\\rbrbrak', '\u2773'));
+                 delimiter.add('\\lbag', new Symbol('\\lbag', '\u27C5'));
+                 delimiter.add('\\rbag', new Symbol('\\rbag', '\u27C6'));
+                 delimiter.add('\\llparenthesis', new Symbol('\\llparenthesis', '\u2987'));
+                 delimiter.add('\\rrparenthesis', new Symbol('\\rrparenthesis', '\u2988'));
+                 delimiter.add('\\llangle', new Symbol('\\llangle', '\u2989'));
+                 delimiter.add('\\rrangle', new Symbol('\\rrangle', '\u298A'));
+                 delimiter.add('\\Lbrbrak', new Symbol('\\Lbrbrak', '\u27EC'));
+                 delimiter.add('\\Rbrbrak', new Symbol('\\Rbrbrak', '\u27ED'));
+                 delimiter.add('\\lBrace', new Symbol('\\lBrace', '\u2983'));
+                 delimiter.add('\\rBrace', new Symbol('\\rBrace', '\u2984'));
+                 delimiter.add('\\lParen', new Symbol('\\lParen', '\u2985'));
+                 delimiter.add('\\rParen', new Symbol('\\rParen', '\u2986'));
+                 delimiter.add('\\lbrackubar', new Symbol('\\lbrackubar', '\u298B'));
+                 delimiter.add('\\rbrackubar', new Symbol('\\rbrackubar', '\u298C'));
+                 delimiter.add('\\lbrackultick', new Symbol('\\lbrackultick', '\u298D'));
+                 delimiter.add('\\rbracklrtick', new Symbol('\\rbracklrtick', '\u298E'));
+                 delimiter.add('\\lbracklltick', new Symbol('\\lbracklltick', '\u298F'));
+                 delimiter.add('\\rbrackurtick', new Symbol('\\rbrackurtick', '\u2990'));
+                 delimiter.add('\\langledot', new Symbol('\\langledot', '\u2991'));
+                 delimiter.add('\\rangledot', new Symbol('\\rangledot', '\u2992'));
+                 delimiter.add('\\lparenless', new Symbol('\\lparenless', '\u2993'));
+                 delimiter.add('\\rparengtr', new Symbol('\\rparengtr', '\u2994'));
+                 delimiter.add('\\Lparengtr', new Symbol('\\Lparengtr', '\u2995'));
+                 delimiter.add('\\Rparenless', new Symbol('\\Rparenless', '\u2996'));
+                 delimiter.add('\\lblkbrbrak', new Symbol('\\lblkbrbrak', '\u2997'));
+                 delimiter.add('\\rblkbrbrak', new Symbol('\\rblkbrbrak', '\u2998'));
+                 delimiter.add('\\lvzigzag', new Symbol('\\lvzigzag', '\u29D8'));
+                 delimiter.add('\\rvzigzag', new Symbol('\\rvzigzag', '\u29D9'));
+                 delimiter.add('\\Lvzigzag', new Symbol('\\Lvzigzag', '\u29DA'));
+                 delimiter.add('\\Rvzigzag', new Symbol('\\Rvzigzag', '\u29DB'));
+                 delimiter.add('\\lcurvyangle', new Symbol('\\lcurvyangle', '\u29FC'));
+                 delimiter.add('\\rcurvyangle', new Symbol('\\rcurvyangle', '\u29FD'));
+                 delimiter.add('\\Vvert', new Symbol('\\Vvert', '\u2980'));
+         }       // ready
+    },           // startup
 
 
     tex: {
-        packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
-        tags: "ams",
-                tagformat: {
-                        number: function (n) {
-                             if(MathJax.config.subequations==0)
-                                 return(MathJax.config.section + n);
-                             else
-                                 return(MathJax.config.section + String.fromCharCode(96+n));
-                        },
-                },
+         packages: {'[+]': ['tagformat', 'Lwarp-macros', 'textmacros']},
+         tags: "ams",
+                 tagformat: {
+                         number: function (n) {
+                              if(MathJax.config.subequations==0)
+                                     return(MathJax.config.section + n);
+                              else
+                                     return(MathJax.config.section + String.fromCharCode(96+n));
+                         },
+                 },
     }
 }
 </script>
 
 
 <script
-        id="MathJax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+         id="MathJax-script"
+         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
 ></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
+<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("pre.programlisting").forEach(el => {
+    const rawText = el.textContent;
+    const code = document.createElement("code");
+    // Default to Lisp, only use Bash for actual terminal commands
+    code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
+    code.textContent = rawText;
+    el.innerHTML = "";
+    el.appendChild(code);
+    hljs.highlightElement(code);
+  });
+});
+</script>
 </head>
 <body>
 
 
-<a id="Manual-autopage-54"></a>
+<a id="Manual-autopage-55"></a>
 <div class="pagegrid">
 
 
@@ -3052,7 +3053,7 @@ Home</a>
 
 
 <p>
-<a href="Performance-Guide.html#autosec-55" class="tocsection" >
+<a href="Performance-Guide.html#autosec-56" class="tocsection" >
 <span class="sectionnumber">3</span>&#x2003;Performance Guide</a>
 </p>
 
@@ -3198,65 +3199,13 @@ Home</a>
 
 \(\let \Vec \vec \)
 
-\(\require {mathtools}\)
-
-\(\newcommand {\vcentcolon }{\mathrel {\unicode {x2236}}}\)
-
-\(\newcommand {\approxcolon }{\approx \vcentcolon }\)
-
-\(\newcommand {\Approxcolon }{\approx \dblcolon }\)
-
-\(\newcommand {\simcolon }{\sim \vcentcolon }\)
-
-\(\newcommand {\Simcolon }{\sim \dblcolon }\)
-
-\(\newcommand {\dashcolon }{\mathrel {-}\vcentcolon }\)
-
-\(\newcommand {\Dashcolon }{\mathrel {-}\dblcolon }\)
-
-\(\newcommand {\colondash }{\vcentcolon \mathrel {-}}\)
-
-\(\newcommand {\Colondash }{\dblcolon \mathrel {-}}\)
-
-\(\newenvironment {crampedsubarray}[1]{}{}\)
-
-\(\newcommand {\smashoperator }[2][]{#2\limits }\)
-
-\(\newcommand {\SwapAboveDisplaySkip }{}\)
-
-\(\newcommand {\LaTeXunderbrace }[1]{\underbrace {#1}}\)
-
-\(\newcommand {\LaTeXoverbrace }[1]{\overbrace {#1}}\)
-
-\(\Newextarrow \xLongleftarrow {10,10}{0x21D0}\)
-
-\(\Newextarrow \xLongrightarrow {10,10}{0x21D2}\)
-
-\(\let \xlongleftarrow \xleftarrow \)
-
-\(\let \xlongrightarrow \xrightarrow \)
-
-\(\newcommand {\LWRmultlined }[1][]{\begin {multline*}}\)
-
-\(\newenvironment {multlined}[1][]{\LWRmultlined }{\end {multline*}}\)
-
-\(\let \LWRorigshoveleft \shoveleft \)
-
-\(\renewcommand {\shoveleft }[1][]{\LWRorigshoveleft }\)
-
-\(\let \LWRorigshoveright \shoveright \)
-
-\(\renewcommand {\shoveright }[1][]{\LWRorigshoveright }\)
-
-\(\newcommand {\shortintertext }[1]{\text {#1}\notag \\}\)
-
 </div>
 
 <!--
 ...... section Performance Guide ......
 -->
-<h4 id="autosec-55"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
-<a id="Manual-autopage-55"></a>
+<h4 id="autosec-56"><span class="sectionnumber">3&#x2003;</span>Performance Guide</h4>
+<a id="Manual-autopage-56"></a>
 <a id="Manual-autofile-3"></a>
 
 <p>
@@ -3272,14 +3221,14 @@ Consumer (SPSC), error handling, and atomic operations.
 <li>
 <p>
 <span class="listmarker">1.</span> <kbd>cl-freelock</kbd> allows the use of <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >fl</span> when calling its functions.
 </p>
 <p>
 <span style="width:20pt; display:inline-block"><!----></span>For example: <span
-     class="colorbox"
-     style="background:#ECECEC ; padding:2pt"
+    class="colorbox"
+    style="background:#ECECEC ; padding:2pt"
 >(fl:queue-push *work-queue* i)</span>
 </p>
 
@@ -3295,139 +3244,155 @@ minor.
 <!--
 ...... subsection General Performance Principles ......
 -->
-<h5 id="autosec-56"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
-<a id="Manual-autopage-56"></a>
+<h5 id="autosec-57"><span class="sectionnumber">3.1&#x2003;</span>General Performance Principles</h5>
+<a id="Manual-autopage-57"></a>
 <!--
 ...... subsubsection Choose the Right Data Structure ......
 -->
-<h6 id="autosec-57"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
-<a id="Manual-autopage-57"></a>
+<h6 id="autosec-58"><span class="sectionnumber">3.1.1&#x2003;</span>Choose the Right Data Structure</h6>
+<a id="Manual-autopage-58"></a>
 <!--
 ...... subsubsection Capacity Selection ......
 -->
-<h6 id="autosec-58"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
-<a id="Manual-autopage-58"></a>
+<h6 id="autosec-59"><span class="sectionnumber">3.1.2&#x2003;</span>Capacity Selection</h6>
+<a id="Manual-autopage-59"></a>
 <!--
 ...... subsubsection Thread Contention ......
 -->
-<h6 id="autosec-59"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
-<a id="Manual-autopage-59"></a>
+<h6 id="autosec-60"><span class="sectionnumber">3.1.3&#x2003;</span>Thread Contention</h6>
+<a id="Manual-autopage-60"></a>
 <!--
 ...... subsection Optimization Techniques ......
 -->
-<h5 id="autosec-60"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
-<a id="Manual-autopage-60"></a>
+<h5 id="autosec-61"><span class="sectionnumber">3.2&#x2003;</span>Optimization Techniques</h5>
+<a id="Manual-autopage-61"></a>
 <!--
 ...... subsubsection Batch Operations ......
 -->
-<h6 id="autosec-61"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
-<a id="Manual-autopage-61"></a>
+<h6 id="autosec-62"><span class="sectionnumber">3.2.1&#x2003;</span>Batch Operations</h6>
+<a id="Manual-autopage-62"></a>
 <!--
 ...... subsubsection Avoid Busy Waiting ......
 -->
-<h6 id="autosec-62"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
-<a id="Manual-autopage-62"></a>
+<h6 id="autosec-63"><span class="sectionnumber">3.2.2&#x2003;</span>Avoid Busy Waiting</h6>
+<a id="Manual-autopage-63"></a>
 <!--
 ...... subsubsection Memory Allocation ......
 -->
-<h6 id="autosec-63"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
-<a id="Manual-autopage-63"></a>
+<h6 id="autosec-64"><span class="sectionnumber">3.2.3&#x2003;</span>Memory Allocation</h6>
+<a id="Manual-autopage-64"></a>
 <!--
 ...... subsection Implementation-Specific Notes ......
 -->
-<h5 id="autosec-64"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
-<a id="Manual-autopage-64"></a>
+<h5 id="autosec-65"><span class="sectionnumber">3.3&#x2003;</span>Implementation-Specific Notes</h5>
+<a id="Manual-autopage-65"></a>
 <!--
 ...... subsubsection SBCL ......
 -->
-<h6 id="autosec-65"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
-<a id="Manual-autopage-65"></a>
+<h6 id="autosec-66"><span class="sectionnumber">3.3.1&#x2003;</span>SBCL</h6>
+<a id="Manual-autopage-66"></a>
 <!--
 ...... subsubsection CLASP ......
 -->
-<h6 id="autosec-66"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
-<a id="Manual-autopage-66"></a>
+<h6 id="autosec-67"><span class="sectionnumber">3.3.2&#x2003;</span>CLASP</h6>
+<a id="Manual-autopage-67"></a>
 <!--
 ...... subsection Common Pitfalls ......
 -->
-<h5 id="autosec-67"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
-<a id="Manual-autopage-67"></a>
+<h5 id="autosec-68"><span class="sectionnumber">3.4&#x2003;</span>Common Pitfalls</h5>
+<a id="Manual-autopage-68"></a>
 <!--
 ...... subsubsection Wrong capacity ......
 -->
-<h6 id="autosec-68"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
-<a id="Manual-autopage-68"></a>
+<h6 id="autosec-69"><span class="sectionnumber">3.4.1&#x2003;</span>Wrong capacity</h6>
+<a id="Manual-autopage-69"></a>
 <!--
 ...... subsubsection Thread safety ......
 -->
-<h6 id="autosec-69"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
-<a id="Manual-autopage-69"></a>
+<h6 id="autosec-70"><span class="sectionnumber">3.4.2&#x2003;</span>Thread safety</h6>
+<a id="Manual-autopage-70"></a>
 <!--
 ...... subsubsection Busy waitings ......
 -->
-<h6 id="autosec-70"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
-<a id="Manual-autopage-70"></a>
+<h6 id="autosec-71"><span class="sectionnumber">3.4.3&#x2003;</span>Busy waitings</h6>
+<a id="Manual-autopage-71"></a>
 <!--
 ...... subsubsection Memory leaks ......
 -->
-<h6 id="autosec-71"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
-<a id="Manual-autopage-71"></a>
+<h6 id="autosec-72"><span class="sectionnumber">3.4.4&#x2003;</span>Memory leaks</h6>
+<a id="Manual-autopage-72"></a>
 <!--
 ...... subsubsection False sharing ......
 -->
-<h6 id="autosec-72"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
-<a id="Manual-autopage-72"></a>
+<h6 id="autosec-73"><span class="sectionnumber">3.4.5&#x2003;</span>False sharing</h6>
+<a id="Manual-autopage-73"></a>
 <!--
 ...... subsection Recommended Patterns ......
 -->
-<h5 id="autosec-73"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
-<a id="Manual-autopage-73"></a>
+<h5 id="autosec-74"><span class="sectionnumber">3.5&#x2003;</span>Recommended Patterns</h5>
+<a id="Manual-autopage-74"></a>
 <!--
 ...... subsubsection Producer-Consumer Pool ......
 -->
-<h6 id="autosec-74"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
-<a id="Manual-autopage-74"></a>
+<h6 id="autosec-75"><span class="sectionnumber">3.5.1&#x2003;</span>Producer-Consumer Pool</h6>
+<a id="Manual-autopage-75"></a>
 <!--
 ...... subsubsection Basic Producer-Consumer ......
 -->
-<h6 id="autosec-75"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
-<a id="Manual-autopage-75"></a>
+<h6 id="autosec-76"><span class="sectionnumber">3.5.2&#x2003;</span>Basic Producer-Consumer</h6>
+<a id="Manual-autopage-76"></a>
 <!--
 ...... subsubsection Bounded Buffer with Batch Processing ......
 -->
-<h6 id="autosec-76"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
-<a id="Manual-autopage-76"></a>
+<h6 id="autosec-77"><span class="sectionnumber">3.5.3&#x2003;</span>Bounded Buffer with Batch Processing</h6>
+<a id="Manual-autopage-77"></a>
 <!--
 ...... subsubsection SPSC Pipeline ......
 -->
-<h6 id="autosec-77"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
-<a id="Manual-autopage-77"></a>
+<h6 id="autosec-78"><span class="sectionnumber">3.5.4&#x2003;</span>SPSC Pipeline</h6>
+<a id="Manual-autopage-78"></a>
 <!--
 ...... subsubsection Load Balancing with Multiple Queues ......
 -->
-<h6 id="autosec-78"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
-<a id="Manual-autopage-78"></a>
+<h6 id="autosec-79"><span class="sectionnumber">3.5.5&#x2003;</span>Load Balancing with Multiple Queues</h6>
+<a id="Manual-autopage-79"></a>
 <!--
 ...... subsubsection Web Server Request Queue ......
 -->
-<h6 id="autosec-79"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
-<a id="Manual-autopage-79"></a>
+<h6 id="autosec-80"><span class="sectionnumber">3.5.6&#x2003;</span>Web Server Request Queue</h6>
+<a id="Manual-autopage-80"></a>
 <!--
 ...... subsubsection Atomic Counter Service ......
 -->
-<h6 id="autosec-80"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
-<a id="Manual-autopage-80"></a>
+<h6 id="autosec-81"><span class="sectionnumber">3.5.7&#x2003;</span>Atomic Counter Service</h6>
+<a id="Manual-autopage-81"></a>
 <!--
 ...... subsubsection Event Processing Pipeline ......
 -->
-<h6 id="autosec-81"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
-<a id="Manual-autopage-81"></a>
+<h6 id="autosec-82"><span class="sectionnumber">3.5.8&#x2003;</span>Event Processing Pipeline</h6>
+<a id="Manual-autopage-82"></a>
 <!--
 ...... subsubsection Memory Pool with Lock-Free Allocation ......
 -->
-<h6 id="autosec-82"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
-<a id="Manual-autopage-82"></a>
+<h6 id="autosec-83"><span class="sectionnumber">3.5.9&#x2003;</span>Memory Pool with Lock-Free Allocation</h6>
+<a id="Manual-autopage-83"></a>
+<!--
+...... section References ......
+-->
+<h4 id="autosec-84">References</h4>
+<a id="Manual-autopage-84"></a>
 
+
+<ul class="list" style="list-style-type:none">
+
+
+<li>
+<p>
+<a id="LWR-ht-cite.0@cwe367"></a>MITRE Corporation (2006). <em>CWE-367: Time-of-check Time-of-use (TOCTOU) Race Condition</em>. <span class="textsc">url</span>: <a
+href="https://cwe.mitre.org/data/definitions/367.html" target="_blank" >https://cwe.mitre.org/data/definitions/367.html</a> (visited on 05/28/2026).
+</p>
+</li>
+</ul>
 
 <a id="Manual-autofile-last"></a>
 </section>
@@ -3441,20 +3406,3 @@ Home</a></nav>
 </div><!-- grid -->
 </body>
 </html>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/stackoverflow-light.min.css">
-<style>.hljs { background: transparent !important; padding: 0 !important; }</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/lisp.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-<script>
-document.querySelectorAll("pre.programlisting").forEach(el => {
-  const rawText = el.textContent;
-  const code = document.createElement("code");
-  // Default to Lisp, only use Bash for actual terminal commands
-  code.className = (rawText.includes("git clone") || rawText.includes("cd ")) ? "language-bash" : "language-lisp";
-  code.textContent = rawText;
-  el.innerHTML = "";
-  el.appendChild(code);
-  hljs.highlightElement(code);
-});
-</script>

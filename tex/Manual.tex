@@ -1,41 +1,52 @@
 \documentclass[12pt, letterpaper]{article}
-\usepackage[utf8]{inputenc}
+% \usepackage[utf8]{inputenc} --- Since we're switching to the luatex compiler, I'm commenting this out since it will throw errors. Additionally, luatex is already UTF-8 by default.
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
+\usepackage{textcomp}
+
+% NOTE 1: lwarpmk clean to fix corrupted aux files. Corrupted aux files means no hyperlinks.
+% NOTE 2: Because Biber was never ran against Manual_html, the HTML pages have broken citation links and an empty bibliography (hence: "Package biblatex Warning: Please (re)run Biber on the file: Manual_html"
+% NOTE 3: lwarp relies on "patching" packages like biblatex and cleveref to translate their complex TeX commands into valid HTML. When it reports "Patching failed," it means lwarp could not successfully intercept the commands to convert them into HTML hyperlinks.
+% "Package biblatex Warning: Patching footnotes failed"
+
+\usepackage[margin=1in]{geometry}
+\setlength{\marginparwidth}{2cm}
+\usepackage{amsmath, amssymb}
+\usepackage{csquotes}
+
+% n.b, I had to run sudo pacman -S texlive-plaingeneric ...
+% extra/texlive-plaingeneric 2026.1-1 (texlive)
+% usr/share/texmf-dist/tex/latex/tracklang/tracklang.sty
+% datetime2 requires tracklang.sty ...
+% Verify it can be found with kpsewhich tracklang.sty
+\usepackage[style=iso]{datetime2}
 \usepackage[
 mathjax,
 ImagesDirectory=imgs,
 ImagesName={lateximg-}
 ]{lwarp}
-
-\usepackage[margin=1in]{geometry}
+\usepackage[font=small]{caption}
+% n.b., Because lwarp fundamentally rewrites how floating environments (like figures and tables) are handled to prevent them from actually "floating" in an HTML document, it requires the float package to be loaded after lwarp so it can properly apply its HTML specific patches over float's definitions.
+\usepackage{float}
+\usepackage{listings}
+% lwarp actually does have special HTML patches for setspace so it must be after lwarp:
 \usepackage{setspace}
 \doublespacing
-\usepackage{csquotes}
-\usepackage{textalpha}
-\usepackage{alphabeta}
-
-\setlength{\marginparwidth}{2cm}
-\usepackage[disable]{todonotes}
-
-\DeclareUnicodeCharacter{2227}{\ensuremath{\wedge}}
-\DeclareUnicodeCharacter{00AC}{\ensuremath{\neg}}
-\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}
-
-\usepackage{amsmath, amssymb, graphicx}
-\usepackage{textcomp}
+% n.b., after an hour of debugging, I have learned that for lwarp v0.9+ graphics and color packages must be loaded after lwarp to avoid crashing the Gin@setfile HTML patcher...
+% additionally, hyperref must be loaded before biblatex, but after lwarp.
+% Additionally, I later learned that html does not support nested footnotes. i.e., autocite will not be rendered with hyperlinks inside a footnote, in lwarp generated html...this explains why the hyperlinks worked in the pdf, but not in the html. Therefor, any citations made inside a footnote must use \cite, not \autocite
+\usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{tikz}
-\usepackage{float}
 \usetikzlibrary{calc, positioning}
 \usetikzlibrary{decorations.pathreplacing}
-\usepackage[font=small]{caption}
-\usepackage{mathtools}
-\usepackage{comment}
+% n.b., Even with the [disable] option, the todonotes package inherently loads tikz and xcolor (or color) in the background to set up its infrastructure.
+\usepackage[disable]{todonotes}
 
-\usepackage[notes,backend=biber]{biblatex-chicago} 
-\addbibresource{references.bib}
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage[style=authoryear,backend=biber]{biblatex}
+\addbibresource{references.bib}
+% \usepackage{enumitem}
 
 \widowpenalty=10000
 \clubpenalty=10000
@@ -49,7 +60,6 @@ ImagesName={lateximg-}
 	\textsuperscript{,}
 }
 \newcommand{\multicomment}[1]{}
-\usepackage{listings}
 
 \newcommand{\customitem}[2]{%
 	\noindent\textbf{#1}\\[0.5ex]%
@@ -115,12 +125,6 @@ ImagesName={lateximg-}
 		rulecolor=\color{black}
 }}
 {}
-% n.b, I had to run sudo pacman -S texlive-plaingeneric ...
-% extra/texlive-plaingeneric 2026.1-1 (texlive)
-% usr/share/texmf-dist/tex/latex/tracklang/tracklang.sty
-% datetime2 requires tracklang.sty ...
-% Verify it can be found with kpsewhich tracklang.sty
-\usepackage[style=iso]{datetime2}
 
 \newcommand{\lastedited}{%
 	Last edited: \DTMnow\ UTC%
@@ -183,7 +187,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 (fl:queue-push *work-queue* i)
 (sleep 0.001)))
 \end{lispcode}
-	n.b., It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state --- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
+	\textit{n.b.,} It is very important you consider the reasoning for adding a sleep in this example. The sleep is just to simulate the time it may take to fetch the next item. It is not needed in the procedure within normal use-cases; however, if you simply ran the example in a fresh REPL, you would risk locking up your entire environment.\footnote{This is called ``CPU Starvation'', which is when a procedure consumes 100\% of a systems CPU core.}\supcom\footnote{Concurrent programming is a matter of managing the interleaving of different processes as they interact with a shared state --- hence, if we ran a loop from i to 1000 without sleep, most modern CPUs would actually be so fast that the producer may finish pushing all 1000 items before a consumer thread has a chance to wakeup.}
 	
 	\textbf{Consumers}
 	A consumer thread works by calling \code{(queue-pop *work-queue*)}. This procedure does not return lisp conditions; instead, \code{queue-pop} returns two specific values:
@@ -191,7 +195,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 		\item The \code{item} itself or \code{NIL} if empty.
 		\item A \code{success} boolean, \code{T} if an item was grabbed, \code{NIL} if the queue was empty.
 	\end{enumerate}
-	n.b., If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.\footnote{Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue --- consequently, this tanks a systems performance.}
+	\textit{n.b.,} If a queue happens to be empty, then the consumer thread should handle it gracefully by briefly sleeping before polling again. The sleep is a small number, which you set to prevent busy waiting.\footnote{Busy waiting (or spinning) is when a consumer constantly asks an empty queue if it has any data in queue --- consequently, this tanks a systems performance.}
 	
 	You must wrap the procedure in a \code{multiple-value-bind} to check if the pop was successful.
 	
@@ -252,7 +256,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 \end{lispcode}
 	
 	\section{API Reference}
-	The API Reference for \texttt{cl-freelock} is a dictionary of all global functions, involving unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), error handling, and atomic primitives.\footnote{n.b, The difference between atomic primitives and atomic operations is a matter concerning layers of abstraction---operations are composed of combinations of primitives and non-primitive procedures.}
+	The API Reference for \texttt{cl-freelock} is a dictionary of all global functions, involving unbounded Multi-Producer Multi-Consumer (MPMC), bounded MPMC, bounded Single Producer Single Consumer (SPSC), error handling, and atomic primitives.\footnote{\textit{n.b.,} The difference between atomic primitives and atomic operations is a matter concerning layers of abstraction---operations are composed of combinations of primitives and non-primitive procedures.}
 	
 	\textbf{Additional Information}
 	
@@ -277,7 +281,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	
 	\customitem{Signature:}{\code{(make-atomic-ref value)}}
 	
-	\customitem{Description:}{	Constructor for the \code{atomic-ref} structure---creates a new atomic reference that holds the provided \code{value}.}
+	\customitem{Description:}{Constructor for the \code{atomic-ref} structure---creates a new atomic reference that holds the provided \code{value}.}
 	
 	\subsubsection{ATOMIC-REF-VALUE}
 	
@@ -285,7 +289,7 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	
 	
 	
-	\customitem{Description:}{Accessor for the value held within an \code{atomic-ref}---used internally by Compare and Swap (CAS) operations.\footnote{An accessor (i.e., A structure or slot accessor) is a procedure which admits access to an object's internal state.}\supcom\footnote{n.b., \code{atomic-ref-value} is internally a \code{defstruct}. In \textit{Common Lisp}, the use of \code{defstruct} acts as both a getter and setter by the implementation's compiler. A getter is a procedure which specifically returns a read-only value.}}
+	\customitem{Description:}{Accessor for the value held within an \code{atomic-ref}---used internally by Compare and Swap (CAS) operations.\footnote{An accessor (\textit{i.e.,} A structure or slot accessor) is a procedure which admits access to an object's internal state.}\supcom\footnote{\textit{n.b.,} \code{atomic-ref-value} is internally a \code{defstruct}. In \textit{Common Lisp}, the use of \code{defstruct} acts as both a getter and setter by the implementation's compiler. A getter is a procedure which specifically returns a read-only value.}}
 	\subsubsection{CAS}
 	
 	\customitem{Signature:}{\code{(cas place old new)}}
@@ -320,23 +324,36 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	
 	\customitem{Example:}{}
 \begin{lispcode}
-(defparameter *work-queue* (make-queue))
+(defparameter *work-queue* (fl:make-queue))
 \end{lispcode}
 	\subsubsection{QUEUE-PUSH}
 	
-	\customitem{Signature:}{}
+	\customitem{Signature:}{\code{(queue-push queue object)}}
 	
-	\customitem{Description:}{}
+	\customitem{Description:}{Pushes an \code{object} into the unbounded queue.}
+	
+	\customitem{Returns:}{\code{T} upon a successful push.}
 	\subsubsection{QUEUE-POP}
 	
-	\customitem{Signature:}{}
+	\customitem{Signature:}{\code{(queue-pop queue)}}
 	
-	\customitem{Description:}{}
+	\customitem{Description:}{Pops an object from the unbounded queue.}
+	
+	\customitem{Returns:}{}
+	\begin{enumerate}
+		\item The \code{object} itself, or \code{NIL} if the queue is empty.
+		\item A success boolean, \code{T} if an item was grabbed, \code{NIL} if the queue was empty.
+	\end{enumerate}
+	\textit{n.b.,} These two values must be captured with the \code{multiple-value-bind}.
 	\subsubsection{QUEUE-EMPTY-P}
 	
-	\customitem{Signature:}{}
+	\customitem{Signature:}{\code{(queue-empty-p queue)}}
 	
-	\customitem{Description:}{}
+	\customitem{Description:}{Checks if the unbounded queue is empty.}
+	
+	\customitem{Returns:}{\code{T} if empty, and \code{NIL} if not.}
+	
+	\textit{Warning}: In a highly concurrent environment, the state of a queue can change immediately after this call returns, so do not rely on it for flow control. If needed, it is best to rely on the success boolean returned by \code{queue-pop}.\footnote{This is called a Time-of-Check to Time-of-Use (TOCTOU) race condition. This is a race condition that specifically occurs when multiple threads or processes access shared data through concurrent means, but without adequate synchronization. \textit{n.b.,} TOCTOU race conditions are exploitable, and thus are security vulnerabilities. \cite{cwe367}}
 	
 	\subsection{MPMC Bounded Queue}
 	\subsubsection{BOUNDED-QUEUE}
@@ -444,6 +461,6 @@ git clone https://github.com/ItsMeForLua/cl-freelock.git
 	\subsubsection{Event Processing Pipeline}
 	\subsubsection{Memory Pool with Lock-Free Allocation}
 	
-	
+	\printbibliography
 \end{document}
 	
