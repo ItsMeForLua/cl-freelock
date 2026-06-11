@@ -24,7 +24,7 @@ name: CLASP
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "develop" ]
 
 jobs:
   setup-and-test-CLASP:
@@ -42,32 +42,58 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # 4.2.2
 
-      - name: Refresh keys
-        run: pacman-key --refresh-keys
-        # If ever needed, we can also add pacman-key --init and pacman-key --populate archlinux
-      - name: Disable pacman 7 sandbox
-        run: sed -i 's/^#DisableSandbox/DisableSandbox/' /etc/pacman.conf
-# I tried having it run pacman -Syu --noconfirm, but clasp needs particular versions of things like clang and llvm, so it's best not to use Syu in this case.
-      - name: Install environment packages
+      - name: Install Nix
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3  # v31.10.6
+        with:
+          # Passes GITHUB_TOKEN to avoid Nix hitting anonymous GitHub API rate limits
+          # when fetching flake inputs during the workflow.
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+ 
+      - name: qlot init
+        run: nix develop --no-update-lock-file --command qlot init
+        # --no-update-lock-file ensures flake.lock is used exactly as committed.
+        # Removing this flag would allow Nix to silently update inputs, breaking
+        # reproducibility.
+
+      - name: Install qlot
+        # Qlot has no pre-built Linux binaries. We fetch the tar.gz at a
+        # pinned version, verify its SHA-256, then build it using SBCL and
+        # OpenSSL provided by the Nix devShell.
+        #
+        # This replaces `curl -L https://qlot.tech/installer | sh`,
+        # which had no integrity guarantee. (CWE-494)
+        #
+        # To get QLOT_SHA256 for a new version:
+        #   curl -fsSL https://github.com/fukamachi/qlot/releases/download/<ver>/qlot-<ver>.tar.gz \
+        #     | sha256sum
         run: |
-          echo "Running ldd on clasp for debug logs..."
-          ldd $(which clasp)
-      - name: Install qlot with curl
-        run: curl -L https://qlot.tech/installer | sh # This is actually the most insecure part of this CI/CD. (CWE-829, CWE-494) and NO pinning.
-      
-      - name: qlot init check
-        run: qlot init
+          QLOT_VERSION="1.8.3"
+          QLOT_SHA256="e7be45d5cd9e1a013910cec272fe8a3c1078ee31f0c3cbfce00c3bc8c6c688d6"
+ 
+          curl -fsSL \
+            "https://github.com/fukamachi/qlot/releases/download/${QLOT_VERSION}/qlot-${QLOT_VERSION}.tar.gz" \
+            -o /tmp/qlot.tar.gz
+ 
+          echo "${QLOT_SHA256}  /tmp/qlot.tar.gz" | sha256sum -c
+ 
+          tar xfz /tmp/qlot.tar.gz -C /tmp
+          cd /tmp/qlot-${QLOT_VERSION}
+ 
+          # Build and install using SBCL + OpenSSL from the Nix devShell.
+          nix develop ${{ github.workspace }}#default --no-update-lock-file \
+            --command bash -c "./scripts/setup.sh && sudo ./scripts/install.sh /usr/local/bin"
+ 
+      - name: qlot init
+        run: nix develop --no-update-lock-file --command qlot init
 
       - name: Install dependencies
-        run: make deps
-
+        run: nix develop --no-update-lock-file --command make deps
+ 
       - name: Run tests
-        run: make test
-      
+        run: nix develop --no-update-lock-file --command make test
+ 
       - name: Run benchmarks
-        run: echo "Benchmarks are not yet compatible with CLASP." #make benchmark
-
-# PATHS:
-# qlot via curl will be installed at /usr/local/bin/qlot
+        run: echo "Benchmarks are not yet compatible with CLASP."
+        # run: nix develop --no-update-lock-file --command make benchmark
