@@ -14,29 +14,36 @@
 # rm -rf /etc/pacman.d/gnupg ...then... pacman -S archlinux-keyring --noconfirm ...then... pacman-key --populate archlinux
 # The current image from clasp has old keyrings, so patches like this might be...
 # needed. Right now we're fine, but it's written here just for reference.
+
+#-----------------------------------------------------------------------
+#
+#                   This whole file needs changed
+#
+#-----------------------------------------------------------------------
 name: CLASP
 
 on:
   push:
     branches: [ "main", "develop" ]
-  pull_request:
-    branches: [ "main", "develop" ]
 
 jobs:
   setup-and-test-CLASP:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # ubuntu-latest is mutable. Additionally, 24.04 LTS has the most security features.
+    # Though, latest currently points to this version, but it's still better not to use the latest tag.
 
-    container:
-      image: ghcr.io/clasp-developers/clasp:latest
+    # using the :latest mutable tag with no digest pinning is insecure. (CWE-829, CWE-494)
+    # :latest is mutable. Additionally, latest can change at any time.
+    # We need to pin the digest. 
+    # Actually ghcr.io/clasp-developers/clasp is stale. Three years old, no version control, latest tag, and old keyrings, so for no we will use something else.
+    # We're actually not even going to use docker. IF we want reproducibility, then NIX is better.
+    # However, hermeticity (especially at the extent of nix), also means that our tests run in a pristine environment that real users may never have.
+    # So we will need to have both: hermetic tests, and integration tests.
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        # Note that the clasp docker image uses arch linux.
-        # Currently, clasp's docker image doesn't fully support pacman 7's sandbox...
-        # so we'll patch for now with sed -i 's/^#DisableSandbox/DisableSandbox/' /etc/pacman.conf
-        # This will let us use pacman without running into any landlock issues.
-        # The keyrefresh kind of takes a while, so I'm hoping to figure out a better fix.
+
       - name: Refresh keys
         run: pacman-key --refresh-keys
         # If ever needed, we can also add pacman-key --init and pacman-key --populate archlinux
@@ -48,7 +55,7 @@ jobs:
           echo "Running ldd on clasp for debug logs..."
           ldd $(which clasp)
       - name: Install qlot with curl
-        run: curl -L https://qlot.tech/installer | sh
+        run: curl -L https://qlot.tech/installer | sh # This is actually the most insecure part of this CI/CD. (CWE-829, CWE-494) and NO pinning.
       
       - name: qlot init check
         run: qlot init

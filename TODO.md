@@ -1,5 +1,5 @@
 **To Implement:**
-
+- **SOON?** I want to use nix-shell for CI/CD --- for reproducibility.
 - **SOON** Finally update the wiki to include a full reference manual of the 20+ userfacing functions in cl-freelock.
 - **SOON** I'm probably going to change the github wiki and its reference guide to LaTeX/Tex, and use lwarp to automate converting it to HTML.
 Document class in this case will be article 12pt, chicago style. The index will be top level, and there will be included footnotes.

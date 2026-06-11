@@ -29,4 +29,4 @@ jenkins_home/
 .RData
 .Rhistory
 *.csv
-graphs/
+graphs/bugs.lisp
