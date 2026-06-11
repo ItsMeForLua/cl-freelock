@@ -65,20 +65,20 @@ jobs:
         run: |
           QLOT_VERSION="1.8.3"
           QLOT_SHA256="e7be45d5cd9e1a013910cec272fe8a3c1078ee31f0c3cbfce00c3bc8c6c688d6"
- 
+
           curl -fsSL \
             "https://github.com/fukamachi/qlot/releases/download/${QLOT_VERSION}/qlot-${QLOT_VERSION}.tar.gz" \
             -o /tmp/qlot.tar.gz
- 
+
           echo "${QLOT_SHA256}  /tmp/qlot.tar.gz" | sha256sum -c
- 
+
           tar xfz /tmp/qlot.tar.gz -C /tmp
-          cd /tmp/qlot-${QLOT_VERSION}
- 
+          cd "/tmp/qlot-${QLOT_VERSION}"
+
           # Build and install using SBCL + OpenSSL from the Nix devShell.
           nix develop ${{ github.workspace }}#default --no-update-lock-file \
             --command bash -c "./scripts/setup.sh && sudo ./scripts/install.sh /usr/local/bin"
- 
+    
       - name: qlot init
         run: nix develop --no-update-lock-file --command qlot init
 
