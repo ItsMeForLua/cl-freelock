@@ -33,6 +33,9 @@
           pkgs.curl
           pkgs.cacert
         ];
+
+        # Explicitly expose OpenSSL shared libraries so CFFI can find libssl.so
+        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
       };
     };
 }
