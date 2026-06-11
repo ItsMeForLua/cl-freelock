@@ -50,12 +50,6 @@ jobs:
           # Passes GITHUB_TOKEN to avoid Nix hitting anonymous GitHub API rate limits
           # when fetching flake inputs during the workflow.
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
- 
-      - name: qlot init
-        run: nix develop --no-update-lock-file --command qlot init
-        # --no-update-lock-file ensures flake.lock is used exactly as committed.
-        # Removing this flag would allow Nix to silently update inputs, breaking
-        # reproducibility.
 
       - name: Install qlot
         # Qlot has no pre-built Linux binaries. We fetch the tar.gz at a
